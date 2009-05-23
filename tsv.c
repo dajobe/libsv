@@ -55,6 +55,12 @@ struct tsv_s {
   int fields_count;
   char **fields;
   size_t *fields_widths;
+
+  /* memory buffer used for constructing fields for user;
+   * array above 'fields' points into this 
+   */
+  char* fields_buffer;
+  size_t fields_buffer_size;
 };
 
 
@@ -78,6 +84,12 @@ tsv_init(FILE* fh, void *user_data, tsv_fields_callback callback)
   t->len = 0;
 
   t->fields_count = 0;
+  t->fields = NULL;
+  t->fields_widths = NULL;
+
+  t->fields_buffer = NULL;  
+  t->fields_buffer_size = 0;
+  
   return t;
 }
 
@@ -106,6 +118,9 @@ tsv_free(tsv *t)
   if(!t)
     return;
 
+  if(t->fields_buffer)
+    free(t->fields_buffer);
+
   if(t->fields_widths)
     free(t->fields_widths);
   if(t->fields)
@@ -120,9 +135,41 @@ tsv_free(tsv *t)
 
 
 
+/* Ensure fields buffer is big enough for len bytes total */
+static int
+tsv_ensure_fields_buffer_size(tsv *t, size_t len)
+{
+  char *nbuffer;
+  size_t nsize;
+  
+  if(len < t->fields_buffer_size)
+    return 0;
+  
+  nsize = len + 8;
+
+#if TSV_DEBUG
+  fprintf(stderr, "%d: Growing buffer from %d to %d bytes\n",
+          t->line, (int)t->fields_buffer_size, (int)nsize);
+#endif
+  
+  nbuffer = malloc(nsize + 1);
+  if(!nbuffer)
+    return 1;
+
+  if(t->fields_buffer)
+    free(t->fields_buffer);
+  
+  t->fields_buffer = nbuffer;
+  t->fields_buffer_size = nsize;
+
+  return 0;
+}
+
+
+
 /* Ensure internal buffer is big enough for len more bytes */
 static int
-tsv_ensure_large(tsv *t, size_t len)
+tsv_ensure_line_buffer_size(tsv *t, size_t len)
 {
   char *nbuffer;
   size_t nsize;
@@ -162,8 +209,7 @@ tsv_get_line(tsv *t)
 
 
 static int
-tsv_parse_line(tsv *t, char *line, size_t len,
-               char* fields_buffer, int* field_count_p)
+tsv_parse_line(tsv *t, char *line, size_t len,  int* field_count_p)
 {
   int column;
   int quote_count = 0;
@@ -182,8 +228,11 @@ tsv_parse_line(tsv *t, char *line, size_t len,
   }
 #endif
   
+  if(tsv_ensure_fields_buffer_size(t, len))
+    return 1;
+
   if(fields) {
-    current_field = fields_buffer;
+    current_field = t->fields_buffer;
     p = current_field;
 
     if(!p)
@@ -272,7 +321,7 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 {
   int offset = 0;
   
-  if(tsv_ensure_large(t, len))
+  if(tsv_ensure_line_buffer_size(t, len))
     return 1;
   
   /* add new buffer */
@@ -297,8 +346,7 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 
     if(!t->fields_count) {
       /* First line in the file - calculate number of fields */
-      if(tsv_parse_line(t, t->buffer, line_len,
-                        NULL, &t->fields_count))
+      if(tsv_parse_line(t, t->buffer, line_len, &t->fields_count))
         return 1;
 
       /* initialise arrays of size t->fields_count */
@@ -308,13 +356,7 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
       }
     }
     
-
-    fields_buffer = (char*)malloc(sizeof(char*) * (len+1));
-    if(!fields_buffer)
-      return 1;
-    
-    if(tsv_parse_line(t, t->buffer, line_len,
-                      fields_buffer, &fields_count)) {
+    if(tsv_parse_line(t, t->buffer, line_len, &fields_count)) {
       free(fields_buffer);
       return 1;
     }
@@ -331,8 +373,6 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
     t->callback(t, t->callback_user_data, t->fields, t->fields_widths,
                 t->fields_count);
 
-    free(fields_buffer);
-    
     /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
     t->len -= line_len+1;
     memcpy(t->buffer, &t->buffer[line_len+1], t->len);
