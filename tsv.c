@@ -273,7 +273,11 @@ tsv_parse_line(tsv *t, char *line, size_t len,  int* field_count_p)
         if(current_field[0] == '"' && 
            current_field[field_width-1] == '"') {
           field_width -= 2;
-          memcpy(&current_field[0], &current_field[1], field_width);
+
+          /* save a memcpy: move the start of the field forward a byte */
+          /* memcpy(&current_field[0], &current_field[1], field_width); */
+          current_field++;
+
           current_field[field_width] = '\0';
         }
       }
