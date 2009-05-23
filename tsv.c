@@ -37,8 +37,6 @@
 
 
 struct tsv_s {
-  FILE *fh;
-
   int line;
   
   /* row callback */
@@ -65,7 +63,7 @@ struct tsv_s {
 
 
 tsv*
-tsv_init(FILE* fh, void *user_data, tsv_fields_callback callback)
+tsv_init(void *user_data, tsv_fields_callback callback)
 {
   tsv *t;
   
@@ -73,7 +71,6 @@ tsv_init(FILE* fh, void *user_data, tsv_fields_callback callback)
   if(!t)
     return NULL;
   
-  t->fh = fh;
   t->line = 0;
   
   t->callback_user_data = user_data;
@@ -125,8 +122,6 @@ tsv_free(tsv *t)
     free(t->fields_widths);
   if(t->fields)
     free(t->fields);
-  if(t->fh)
-    fclose(t->fh);
   if(t->buffer)
     free(t->buffer);
   
