@@ -59,11 +59,17 @@ struct tsv_s {
    */
   char* fields_buffer;
   size_t fields_buffer_size;
+
+  /* first row is saved as headers */
+  char **headers;
+  size_t *headers_widths;
+
+  int flags;
 };
 
 
 tsv*
-tsv_init(void *user_data, tsv_fields_callback callback)
+tsv_init(void *user_data, tsv_fields_callback callback, int flags)
 {
   tsv *t;
   
@@ -87,6 +93,11 @@ tsv_init(void *user_data, tsv_fields_callback callback)
   t->fields_buffer = NULL;  
   t->fields_buffer_size = 0;
   
+  t->headers = NULL;
+  t->headers_widths = NULL;
+
+  t->flags = flags;
+  
   return t;
 }
 
@@ -96,13 +107,37 @@ tsv_init_fields(tsv *t)
 {
   t->fields = (char**)malloc(sizeof(char*) * (t->fields_count+1));
   if(!t->fields)
-    return 1;
+    goto failed;
     
   t->fields_widths = (size_t*)malloc(sizeof(size_t*) * (t->fields_count+1));
-  if(!t->fields_widths) {
+  if(!t->fields_widths)
+    goto failed;
+
+  t->headers = (char**)malloc(sizeof(char*) * (t->fields_count+1));
+  if(!t->headers)
+    goto failed;
+  
+  t->headers_widths = (size_t*)malloc(sizeof(size_t*) * (t->fields_count+1));
+  if(!t->headers_widths)
+    goto failed;
+
+  return 0;
+  
+
+  failed:
+  if(t->fields) {
     free(t->fields);
     t->fields = NULL;
-    return 1;
+  }
+
+  if(t->fields_widths) {
+    free(t->fields_widths);
+    t->fields_widths = NULL;
+  }
+  
+  if(t->headers) {
+    free(t->headers);
+    t->headers = NULL;
   }
 
   return 0;
@@ -114,6 +149,17 @@ tsv_free(tsv *t)
 {
   if(!t)
     return;
+
+  if(t->headers_widths)
+    free(t->headers_widths);
+  if(t->headers) {
+    int i;
+    
+    for(i = 0; i < t->fields_count; i++)
+      free(t->headers[i]);
+    free(t->headers);
+  }
+  
 
   if(t->fields_buffer)
     free(t->fields_buffer);
@@ -199,6 +245,19 @@ tsv_get_line(tsv *t)
     return -1;
 
   return t->line;
+}
+
+
+const char*
+tsv_get_header(tsv *t, unsigned int i, size_t *width_p)
+{
+  if(!t || !t->headers || i > t->fields_count)
+    return NULL;
+
+  if(width_p)
+    *width_p = t->headers_widths[i];
+  
+  return (const char*)t->headers[i];
 }
 
 
@@ -368,10 +427,25 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
     }
 
 
+    if(!t->line && (t->flags & TSV_FLAGS_SAVE_HEADER)) {
+      /* first line so save fields as headers */
+      int i;
+      
+      for(i = 0; i < t->fields_count; i++) {
+        char *s = (char*)malloc(t->fields_widths[i]+1);
+        memcpy(s, t->fields[i], t->fields_widths[i]+1);
+        t->headers[i] = s;
+      }
+      goto skip;
+    }
+
+
     /* got fields - return them to user */
     t->callback(t, t->callback_user_data, t->fields, t->fields_widths,
                 t->fields_count);
 
+    skip:
+    
     /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
     t->len -= line_len+1;
 
