@@ -32,7 +32,8 @@
 #include <stdlib.h>
 #endif
 
-#include <internal.h>
+
+#include <tsv.h>
 
 
 struct tsv_s {
@@ -50,6 +51,10 @@ struct tsv_s {
   size_t size;
   /* size used */
   size_t len;
+
+  int fields_count;
+  char **fields;
+  size_t *fields_widths;
 };
 
 
@@ -71,7 +76,27 @@ tsv_init(FILE* fh, void *user_data, tsv_fields_callback callback)
   t->buffer = NULL;
   t->size = 0;
   t->len = 0;
+
+  t->fields_count = 0;
   return t;
+}
+
+
+static int
+tsv_init_fields(tsv *t) 
+{
+  t->fields = (char**)malloc(sizeof(char*) * (t->fields_count+1));
+  if(!t->fields)
+    return 1;
+    
+  t->fields_widths = (size_t*)malloc(sizeof(size_t*) * (t->fields_count+1));
+  if(!t->fields_widths) {
+    free(t->fields);
+    t->fields = NULL;
+    return 1;
+  }
+
+  return 0;
 }
 
 
@@ -80,6 +105,11 @@ tsv_free(tsv *t)
 {
   if(!t)
     return;
+
+  if(t->fields_widths)
+    free(t->fields_widths);
+  if(t->fields)
+    free(t->fields);
   if(t->fh)
     fclose(t->fh);
   if(t->buffer)
@@ -133,8 +163,7 @@ tsv_get_line(tsv *t)
 
 static int
 tsv_parse_line(tsv *t, char *line, size_t len,
-               char* fields_buffer, char** fields, size_t* fields_widths,
-               int* field_count_p)
+               char* fields_buffer, int* field_count_p)
 {
   int column;
   int quote_count = 0;
@@ -142,6 +171,8 @@ tsv_parse_line(tsv *t, char *line, size_t len,
   int field_offset = 0;
   char* current_field = NULL;
   char* p = NULL;
+  char** fields = t->fields;
+  size_t* fields_widths = t->fields_widths;
 
 #if TSV_DEBUG
   if(fields) {
@@ -228,10 +259,9 @@ tsv_parse_line(tsv *t, char *line, size_t len,
   }
 
 
-  if(!fields) {
+  if(field_count_p)
     *field_count_p = field_offset + 1;
-    return 0;
-  }
+
 
   return 0;
 }
@@ -256,8 +286,6 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
   for(offset = 0; offset < t->len; offset++) {
     size_t line_len;
     char *fields_buffer;
-    char **fields;
-    size_t *fields_widths;
     int fields_count;
 
     if(t->buffer[offset] != '\n')
@@ -267,43 +295,42 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
     fields_count = 0;
     line_len = offset;
 
-    if(tsv_parse_line(t, t->buffer, line_len,
-                      NULL, NULL, NULL, 
-                      &fields_count))
-      return 1;
+    if(!t->fields_count) {
+      /* First line in the file - calculate number of fields */
+      if(tsv_parse_line(t, t->buffer, line_len,
+                        NULL, &t->fields_count))
+        return 1;
+
+      /* initialise arrays of size t->fields_count */
+      if(tsv_init_fields(t)) {
+        free(fields_buffer);
+        return 1;
+      }
+    }
+    
 
     fields_buffer = (char*)malloc(sizeof(char*) * (len+1));
     if(!fields_buffer)
       return 1;
     
-    fields = (char**)malloc(sizeof(char*) * (fields_count+1));
-    if(!fields) {
-      free(fields_buffer);
-      return 1;
-    }
-    
-    fields_widths = (size_t*)malloc(sizeof(size_t*) * (fields_count+1));
-    if(!fields_widths) {
-      free(fields_buffer);
-      free(fields);
-      return 1;
-    }
-    
     if(tsv_parse_line(t, t->buffer, line_len,
-                      fields_buffer, fields, fields_widths,
-                      &fields_count)) {
-      free(fields_widths);
-      free(fields);
+                      fields_buffer, &fields_count)) {
       free(fields_buffer);
+      return 1;
+    }
+
+    if(fields_count != t->fields_count) {
+      /** ERROR **/
+      fprintf(stderr, "line %d: saw %d fields expected %d\n",
+              t->line, fields_count, t->fields_count);
       return 1;
     }
 
 
     /* got fields - return them to user */
-    t->callback(t, t->callback_user_data, fields, fields_widths, fields_count);
+    t->callback(t, t->callback_user_data, t->fields, t->fields_widths,
+                t->fields_count);
 
-    free(fields_widths);
-    free(fields);
     free(fields_buffer);
     
     /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
