@@ -374,7 +374,10 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 
     /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
     t->len -= line_len+1;
-    memcpy(t->buffer, &t->buffer[line_len+1], t->len);
+
+    /* this is an overlapping move */
+    memmove(t->buffer, &t->buffer[line_len+1], t->len);
+
     /* This is not needed: guaranteed above */
     /* t->buffer[t->len] = '\0' */
 
