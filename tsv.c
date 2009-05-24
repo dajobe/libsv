@@ -459,6 +459,9 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
     offset = 0;
     
     t->line++;
+    
+    if(rc)
+      break;
   }
   
   return rc;
