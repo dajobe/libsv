@@ -378,6 +378,7 @@ int
 tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 {
   int offset = 0;
+  int rc = 0;
   
   if(tsv_ensure_line_buffer_size(t, len))
     return 1;
@@ -441,8 +442,8 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 
 
     /* got fields - return them to user */
-    t->callback(t, t->callback_user_data, t->fields, t->fields_widths,
-                t->fields_count);
+    rc = t->callback(t, t->callback_user_data, t->fields, t->fields_widths,
+                     t->fields_count);
 
     skip:
     
@@ -460,5 +461,5 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
     t->line++;
   }
   
-  return 0;
+  return rc;
 }
