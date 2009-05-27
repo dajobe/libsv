@@ -50,7 +50,7 @@ struct tsv_s {
   /* size used */
   size_t len;
 
-  int fields_count;
+  unsigned int fields_count;
   char **fields;
   size_t *fields_widths;
 
@@ -153,7 +153,7 @@ tsv_free(tsv *t)
   if(t->headers_widths)
     free(t->headers_widths);
   if(t->headers) {
-    int i;
+    unsigned int i;
     
     for(i = 0; i < t->fields_count; i++)
       free(t->headers[i]);
@@ -263,9 +263,9 @@ tsv_get_header(tsv *t, unsigned int i, size_t *width_p)
 
 
 static int
-tsv_parse_line(tsv *t, char *line, size_t len,  int* field_count_p)
+tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
 {
-  int column;
+  unsigned int column;
   int quote_count = 0;
   int field_width = 0;
   int field_offset = 0;
@@ -377,7 +377,7 @@ tsv_parse_line(tsv *t, char *line, size_t len,  int* field_count_p)
 int
 tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 {
-  int offset = 0;
+  unsigned int offset = 0;
   int rc = 0;
   
   if(tsv_ensure_line_buffer_size(t, len))
@@ -394,7 +394,7 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
   for(offset = 0; offset < t->len; offset++) {
     size_t line_len;
     char *fields_buffer;
-    int fields_count;
+    unsigned int fields_count;
 
     if(t->buffer[offset] != '\n')
       continue;
@@ -430,7 +430,7 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 
     if(!t->line && (t->flags & TSV_FLAGS_SAVE_HEADER)) {
       /* first line so save fields as headers */
-      int i;
+      unsigned int i;
       
       for(i = 0; i < t->fields_count; i++) {
         char *s = (char*)malloc(t->fields_widths[i]+1);
