@@ -65,6 +65,9 @@ struct tsv_s {
   size_t *headers_widths;
 
   int flags;
+
+  /* error state */
+  tsv_status_t status;
 };
 
 
@@ -97,7 +100,9 @@ tsv_init(void *user_data, tsv_fields_callback callback, int flags)
   t->headers_widths = NULL;
 
   t->flags = flags;
-  
+
+  t->status = TSV_STATUS_OK;
+
   return t;
 }
 
@@ -121,7 +126,7 @@ tsv_init_fields(tsv *t)
   if(!t->headers_widths)
     goto failed;
 
-  return 0;
+  return TSV_STATUS_OK;
   
 
   failed:
@@ -140,7 +145,7 @@ tsv_init_fields(tsv *t)
     t->headers = NULL;
   }
 
-  return 0;
+  return TSV_STATUS_NO_MEMORY;
 }
 
 
@@ -184,7 +189,7 @@ tsv_ensure_fields_buffer_size(tsv *t, size_t len)
   size_t nsize;
   
   if(len < t->fields_buffer_size)
-    return 0;
+    return TSV_STATUS_OK;
   
   nsize = len + 8;
 
@@ -195,7 +200,7 @@ tsv_ensure_fields_buffer_size(tsv *t, size_t len)
   
   nbuffer = (char*)malloc(nsize + 1);
   if(!nbuffer)
-    return 1;
+    return TSV_STATUS_NO_MEMORY;
 
   if(t->fields_buffer)
     free(t->fields_buffer);
@@ -203,26 +208,26 @@ tsv_ensure_fields_buffer_size(tsv *t, size_t len)
   t->fields_buffer = nbuffer;
   t->fields_buffer_size = nsize;
 
-  return 0;
+  return TSV_STATUS_OK;
 }
 
 
 
 /* Ensure internal buffer is big enough for len more bytes */
-static int
+static tsv_status_t
 tsv_ensure_line_buffer_size(tsv *t, size_t len)
 {
   char *nbuffer;
   size_t nsize;
   
   if(t->len + len < t->size)
-    return 0;
+    return TSV_STATUS_OK;
   
   nsize = (len + t->len) << 1;
     
   nbuffer = (char*)malloc(nsize + 1);
   if(!nbuffer)
-    return 1;
+    return TSV_STATUS_NO_MEMORY;
 
   if(t->len)
     memcpy(nbuffer, t->buffer, t->len);
@@ -234,7 +239,7 @@ tsv_ensure_line_buffer_size(tsv *t, size_t len)
   t->buffer = nbuffer;
   t->size = nsize;
 
-  return 0;
+  return TSV_STATUS_OK;
 }
 
 
@@ -273,6 +278,7 @@ tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
   char* p = NULL;
   char** fields = t->fields;
   size_t* fields_widths = t->fields_widths;
+  tsv_status_t status = TSV_STATUS_OK;
 
 #if TSV_DEBUG
   if(fields) {
@@ -282,15 +288,16 @@ tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
   }
 #endif
   
-  if(tsv_ensure_fields_buffer_size(t, len))
-    return 1;
+  status = tsv_ensure_fields_buffer_size(t, len);
+  if(status)
+    return status;
 
   if(fields) {
     current_field = t->fields_buffer;
     p = current_field;
 
     if(!p)
-      return 1;
+      return status;
   }
 
   for(column = 0; 1; column++) {
@@ -370,18 +377,19 @@ tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
     *field_count_p = field_offset + 1;
 
 
-  return 0;
+  return status;
 }
 
 
-int
+tsv_status_t
 tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 {
   unsigned int offset = 0;
-  int rc = 0;
+  tsv_status_t status = TSV_STATUS_OK;
   
-  if(tsv_ensure_line_buffer_size(t, len))
-    return 1;
+  status = tsv_ensure_line_buffer_size(t, len);
+  if(status)
+    return status;
   
   /* add new buffer */
   memcpy(t->buffer + t->len, buffer, len);
@@ -442,8 +450,8 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 
 
     /* got fields - return them to user */
-    rc = t->callback(t, t->callback_user_data, t->fields, t->fields_widths,
-                     t->fields_count);
+    status = t->callback(t, t->callback_user_data, t->fields, t->fields_widths,
+                         t->fields_count);
 
     skip:
     
@@ -460,9 +468,9 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
     
     t->line++;
     
-    if(rc)
+    if(status)
       break;
   }
   
-  return rc;
+  return status;
 }
