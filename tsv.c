@@ -193,7 +193,7 @@ tsv_ensure_fields_buffer_size(tsv *t, size_t len)
           t->line, (int)t->fields_buffer_size, (int)nsize);
 #endif
   
-  nbuffer = malloc(nsize + 1);
+  nbuffer = (char*)malloc(nsize + 1);
   if(!nbuffer)
     return 1;
 
@@ -220,7 +220,7 @@ tsv_ensure_line_buffer_size(tsv *t, size_t len)
   
   nsize = (len + t->len) << 1;
     
-  nbuffer = malloc(nsize + 1);
+  nbuffer = (char*)malloc(nsize + 1);
   if(!nbuffer)
     return 1;
 
