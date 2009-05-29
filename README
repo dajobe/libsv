@@ -1,0 +1,11 @@
+libtsv - a simple Tab Separated Values library in ANSI C.
+
+License: LGPL 2.1+ or GPL 2+ or Apache 2+
+
+Home: http://github.com/dajobe/libtsv/tree/master
+Source: git clone git://github.com/dajobe/libtsv.git
+
+See example.c for API use.
+
+Dave Beckett
+http://www.dajobe.org/
