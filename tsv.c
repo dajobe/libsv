@@ -14,7 +14,7 @@
  * You may not use this file except in compliance with at least one of
  * the above three licenses.
  * 
- * See LICENSE.html or LICENSE.txt at the top of this package for the
+ * See LICENSE.txt at the top of this package for the
  * complete terms and further detail along with the license texts for
  * the licenses in COPYING.LIB, COPYING and LICENSE-2.0.txt respectively.
  * 
