@@ -314,15 +314,16 @@ tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
       quote_count = 0;
 
 #if TSV_DEBUG
-      if(fields) {
-        fprintf(stderr, "  Column %d: c %c  qc %d  width %d\n", column, c, quote_count, (int)field_width);
-      }
+    if(fields) {
+      fprintf(stderr, "  Column %d: c %c  qc %d  width %d\n", column, c, quote_count, (int)field_width);
+    }
 #endif
       
-    if(quote_count > 1)
+    if(quote_count > 1) {
+      quote_count = 0;
       /* skip repeated quote - so it just replaces ""... with " */
       continue;
-
+    }
 
     do_last:
     if(c == '\t' || column == len) {
@@ -331,7 +332,8 @@ tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
       
       if(fields) {
         /* Remove quotes around quoted field */
-        if(current_field[0] == '"' && 
+        if(field_width > 1 &&
+           current_field[0] == '"' && 
            current_field[field_width-1] == '"') {
           field_width -= 2;
 

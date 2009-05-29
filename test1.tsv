@@ -1,2 +1,9 @@
 subject	predicate	object
 cat	sat	mat
+"foo"	bar	blah
+this	"is a"	test
+		
+"	"	"
+""	""	""
+"""	"""	"""
+quoting	"can ""be"""	fun
