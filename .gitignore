@@ -1,3 +1,10 @@
+.deps
+.libs
 *.o
-example
+*.lo
 *.tar.gz
+Makefile
+Makefile.in
+TAGS
+example
+libtsv.la
