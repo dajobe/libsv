@@ -21,8 +21,8 @@
  */
 
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
+#ifdef TSV_CONFIG
+#include <tsv_config.h>
 #endif
 
 #include <stdio.h>
@@ -31,7 +31,6 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-
 
 #include <tsv.h>
 
