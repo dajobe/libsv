@@ -192,7 +192,7 @@ tsv_ensure_fields_buffer_size(tsv *t, size_t len)
   
   nsize = len + 8;
 
-#if TSV_DEBUG
+#if defined(TSV_DEBUG)
   fprintf(stderr, "%d: Growing buffer from %d to %d bytes\n",
           t->line, (int)t->fields_buffer_size, (int)nsize);
 #endif
@@ -279,7 +279,7 @@ tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
   size_t* fields_widths = t->fields_widths;
   tsv_status_t status = TSV_STATUS_OK;
 
-#if TSV_DEBUG
+#if defined(TSV_DEBUG)
   if(fields) {
     fprintf(stderr, "Parsing line (%d bytes)\n  >>", (int)len);
     fwrite(line, 1, len, stderr);
@@ -312,7 +312,7 @@ tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
     else
       quote_count = 0;
 
-#if TSV_DEBUG
+#if defined(TSV_DEBUG)
     if(fields) {
       fprintf(stderr, "  Column %d: c %c  qc %d  width %d\n", column, c, quote_count, (int)field_width);
     }
@@ -344,7 +344,7 @@ tsv_parse_line(tsv *t, char *line, size_t len,  unsigned int* field_count_p)
         }
       }
 
-#if TSV_DEBUG
+#if defined(TSV_DEBUG)
       if(fields) {
         fprintf(stderr, "  Field %d: width %d\n", (int)field_offset, (int)field_width);
       }
