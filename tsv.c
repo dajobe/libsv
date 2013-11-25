@@ -402,7 +402,6 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
   /* look for an end of line to do some work */
   for(offset = 0; offset < t->len; offset++) {
     size_t line_len;
-    char *fields_buffer;
     unsigned int fields_count;
 
     if(t->buffer[offset] != '\n')
@@ -419,13 +418,20 @@ tsv_parse_chunk(tsv *t, char *buffer, size_t len)
 
       /* initialise arrays of size t->fields_count */
       if(tsv_init_fields(t)) {
-        free(fields_buffer);
+        if(t->fields_buffer) {
+          free(t->fields_buffer);
+          t->fields_buffer_size = 0;
+        }
         return 1;
       }
     }
     
     if(tsv_parse_line(t, t->buffer, line_len, &fields_count)) {
-      free(fields_buffer);
+      if(t->fields_buffer) {
+        free(t->fields_buffer);
+        t->fields_buffer_size = 0;
+      }
+      
       return 1;
     }
 
