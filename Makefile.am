@@ -18,14 +18,7 @@ libtsv_la_SOURCES = \
 tsv.c \
 tsv.h
 
-TESTS=mttest
-
-mttest_SOURCES = test.c
-mttest_LDADD = libtsv.la
-
-EXTRA_PROGRAMS=$(TESTS)
-
-CLEANFILES=$(TESTS) \
+CLEANFILES= \
 *.plist
 
 
