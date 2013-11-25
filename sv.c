@@ -36,6 +36,9 @@
 
 
 struct sv_s {
+  /* field separator: '\t' or ',' */
+  char field_sep;
+
   int line;
   
   /* row callback */
@@ -71,14 +74,19 @@ struct sv_s {
 
 
 sv*
-sv_init(void *user_data, sv_fields_callback callback, int flags)
+sv_init(void *user_data, sv_fields_callback callback, char field_sep, int flags)
 {
   sv *t;
+
+  if(field_sep != '\t' || field_sep != ',')
+    return NULL;
   
   t = (sv*)malloc(sizeof(*t));
   if(!t)
     return NULL;
   
+  t->field_sep = field_sep;
+
   t->line = 0;
   
   t->callback_user_data = user_data;
@@ -325,7 +333,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
     }
 
     do_last:
-    if(c == '\t' || column == len) {
+    if(c == t->field_sep || column == len) {
       if(p)
         *p++ = '\0';
       
