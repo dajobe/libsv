@@ -53,9 +53,6 @@ my_sv_header_callback(sv *t, void *user_data,
                       char** fields, size_t *widths, size_t count)
 {
   unsigned int i;
-  myc *c=(myc*)user_data;
-  
-  c->count++;
   
   fprintf(stdout, "Header with %d fields\n",  (int)count);
   for(i = 0; i < count; i++)
