@@ -11,6 +11,7 @@ ANALYZE_COMMAND = $(ANALYZE) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) \
 	$(ANALYZE_FLAGS)
 
+noinst_PROGRAMS = example
 noinst_LTLIBRARIES = libsv.la
 AM_CPPFLAGS = -DSV_CONFIG -I$(top_srcdir)/src
 
@@ -18,7 +19,12 @@ libsv_la_SOURCES = \
 sv.c \
 sv.h
 
+example_SOURCES = example.c
+example_LDADD = libsv.la
+
+
 CLEANFILES= \
+example \
 *.plist
 
 
