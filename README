@@ -1,4 +1,4 @@
-libtsv - a simple Tab Separated Values library in ANSI C.
+libsv - a simple Separated Values (CSV, TSV) library in ANSI C.
 
 License: LGPL 2.1+ or GPL 2+ or Apache 2+
 

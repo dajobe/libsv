@@ -22,7 +22,7 @@
 
 
 #ifdef TSV_CONFIG
-#include <tsv_config.h>
+#include <sv_config.h>
 #endif
 
 #include <stdio.h>
@@ -38,7 +38,7 @@
 #include <errno.h>
 #endif
 
-#include <tsv.h>
+#include <sv.h>
 
 
 /* structure used for user data callback */
@@ -48,8 +48,8 @@ typedef struct
 } myc;
 
 
-static tsv_status_t
-my_tsv_fields_callback(tsv *t, void *user_data,
+static sv_status_t
+my_sv_fields_callback(sv *t, void *user_data,
                        char** fields, size_t *widths, size_t count)
 {
   unsigned int i;
@@ -59,14 +59,14 @@ my_tsv_fields_callback(tsv *t, void *user_data,
   c->count++;
   
   fprintf(stdout, "Line %d: Record with %d fields\n",
-          tsv_get_line(t), (int)count);
+          sv_get_line(t), (int)count);
   for(i = 0; i < count; i++)
     fprintf(stdout, 
             "  Field %3d %s: %s (width %d)\n", (int)i,
-            tsv_get_header(t, i, NULL), fields[i], (int)widths[i]);
+            sv_get_header(t, i, NULL), fields[i], (int)widths[i]);
 
   /* This code always succeeds */
-  return TSV_STATUS_OK;
+  return SV_STATUS_OK;
 }
 
 
@@ -78,11 +78,11 @@ main(int argc, char *argv[])
   int rc = 0;
   const char* data_file = NULL;
   FILE *fh = NULL;
-  tsv *t = NULL;
+  sv *t = NULL;
   myc c;
   
   if(argc != 2) {
-    fprintf(stderr, "USAGE: %s [TSV FILE]\n", program);
+    fprintf(stderr, "USAGE: %s [SV FILE]\n", program);
     rc = 1;
     goto tidy;
   }
@@ -106,9 +106,9 @@ main(int argc, char *argv[])
   c.count = 0;
 
   /* save first line as header not data */
-  t = tsv_init(&c, my_tsv_fields_callback, TSV_FLAGS_SAVE_HEADER);
+  t = sv_init(&c, my_sv_fields_callback, SV_FLAGS_SAVE_HEADER);
   if(!t) {
-    fprintf(stderr, "%s: Failed to init TSV library", program);
+    fprintf(stderr, "%s: Failed to init SV library", program);
     rc = 1;
     goto tidy;
   }
@@ -117,7 +117,7 @@ main(int argc, char *argv[])
     char buffer[1024];
     size_t len = fread(buffer, 1, sizeof(buffer), fh);
     
-    if(tsv_parse_chunk(t, buffer, len))
+    if(sv_parse_chunk(t, buffer, len))
       break;
   }
   fclose(fh);
@@ -127,7 +127,7 @@ main(int argc, char *argv[])
   
  tidy:
   if(t)
-    tsv_free(t);
+    sv_free(t);
 
   if(fh) {
     fclose(fh);

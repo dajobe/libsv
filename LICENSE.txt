@@ -1,4 +1,4 @@
-                      libtsv - License
+                      libsv - License
 
    This package is Free Software available under any one of the specified
    licenses below. All the licenses below are alternatives and if you

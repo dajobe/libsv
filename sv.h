@@ -1,6 +1,6 @@
 /* -*- Mode: c; c-basic-offset: 2 -*-
  *
- * tsv.h - Header for libtsv
+ * sv.h - Header for libsv
  *
  * Copyright (C) 2009, David Beckett http://www.dajobe.org/
  * 
@@ -22,23 +22,23 @@
 
 
 typedef enum {
-  TSV_STATUS_OK = 0,
-  TSV_STATUS_FAILED,
-  TSV_STATUS_NO_MEMORY
-} tsv_status_t;
+  SV_STATUS_OK = 0,
+  SV_STATUS_FAILED,
+  SV_STATUS_NO_MEMORY
+} sv_status_t;
   
 
-typedef struct tsv_s tsv;
-typedef tsv_status_t (*tsv_fields_callback)(tsv *t, void *user_data, char** fields, size_t *widths, size_t count);
+typedef struct sv_s sv;
+typedef sv_status_t (*sv_fields_callback)(sv *t, void *user_data, char** fields, size_t *widths, size_t count);
 
-/* bit flags for tsv_init() */
-#define TSV_FLAGS_SAVE_HEADER (1<<0)
+/* bit flags for sv_init() */
+#define SV_FLAGS_SAVE_HEADER (1<<0)
 
-tsv* tsv_init(void *user_data, tsv_fields_callback callback, int flags);
-void tsv_free(tsv *t);
+sv* sv_init(void *user_data, sv_fields_callback callback, int flags);
+void sv_free(sv *t);
 
-int tsv_get_line(tsv *t);
-const char* tsv_get_header(tsv *t, unsigned int i, size_t *width_p);
+int sv_get_line(sv *t);
+const char* sv_get_header(sv *t, unsigned int i, size_t *width_p);
 
-tsv_status_t tsv_parse_chunk(tsv *t, char *buffer, size_t len);
+sv_status_t sv_parse_chunk(sv *t, char *buffer, size_t len);
 

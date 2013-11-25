@@ -1,6 +1,6 @@
 # -*- Mode: Makefile -*-
 #
-# Makefile for libtsv convienience library
+# Makefile for libsv convienience library
 #
 
 ANALYZE = clang
@@ -11,12 +11,12 @@ ANALYZE_COMMAND = $(ANALYZE) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) \
 	$(ANALYZE_FLAGS)
 
-noinst_LTLIBRARIES = libtsv.la
-AM_CPPFLAGS = -DTSV_CONFIG -I$(top_srcdir)/src
+noinst_LTLIBRARIES = libsv.la
+AM_CPPFLAGS = -DSV_CONFIG -I$(top_srcdir)/src
 
-libtsv_la_SOURCES = \
-tsv.c \
-tsv.h
+libsv_la_SOURCES = \
+sv.c \
+sv.h
 
 CLEANFILES= \
 *.plist
