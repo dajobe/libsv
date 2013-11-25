@@ -22,6 +22,10 @@ sv.h
 example_SOURCES = example.c
 example_LDADD = libsv.la
 
+EXTRA_DIST = \
+one.tsv \
+test1.tsv
+
 
 CLEANFILES= \
 example \
