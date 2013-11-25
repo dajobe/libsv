@@ -49,6 +49,25 @@ typedef struct
 
 
 static sv_status_t
+my_sv_header_callback(sv *t, void *user_data,
+                      char** fields, size_t *widths, size_t count)
+{
+  unsigned int i;
+  myc *c=(myc*)user_data;
+  
+  c->count++;
+  
+  fprintf(stdout, "Header with %d fields\n",  (int)count);
+  for(i = 0; i < count; i++)
+    fprintf(stdout, "%3d: '%s' (width %d)\n", (int)i,
+            fields[i], (int)widths[i]);
+
+  /* This code always succeeds */
+  return SV_STATUS_OK;
+}
+
+
+static sv_status_t
 my_sv_fields_callback(sv *t, void *user_data,
                        char** fields, size_t *widths, size_t count)
 {
@@ -61,7 +80,7 @@ my_sv_fields_callback(sv *t, void *user_data,
           sv_get_line(t), (int)count);
   for(i = 0; i < count; i++)
     fprintf(stdout, 
-            "  Field %3d %s: %s (width %d)\n", (int)i,
+            "%3d %-10s: '%s' (width %d)\n", (int)i,
             sv_get_header(t, i, NULL), fields[i], (int)widths[i]);
 
   /* This code always succeeds */
@@ -105,7 +124,8 @@ main(int argc, char *argv[])
   c.count = 0;
 
   /* save first line as header not data */
-  t = sv_init(&c, my_sv_fields_callback, '\t', SV_FLAGS_SAVE_HEADER);
+  t = sv_init(&c, my_sv_header_callback, my_sv_fields_callback, 
+              '\t', SV_FLAGS_SAVE_HEADER);
   if(!t) {
     fprintf(stderr, "%s: Failed to init SV library", program);
     rc = 1;
