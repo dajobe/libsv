@@ -1,8 +1,8 @@
 /* -*- Mode: c; c-basic-offset: 2 -*-
  *
- * example.c - TSV example program
+ * example.c - SV example program
  *
- * Copyright (C) 2009, David Beckett http://www.dajobe.org/
+ * Copyright (C) 2009-2013, David Beckett http://www.dajobe.org/
  * 
  * This package is Free Software
  * 
@@ -21,7 +21,7 @@
  */
 
 
-#ifdef TSV_CONFIG
+#ifdef SV_CONFIG
 #include <sv_config.h>
 #endif
 
@@ -54,7 +54,6 @@ my_sv_fields_callback(sv *t, void *user_data,
 {
   unsigned int i;
   myc *c=(myc*)user_data;
-  int rc = 0;
   
   c->count++;
   
@@ -106,7 +105,7 @@ main(int argc, char *argv[])
   c.count = 0;
 
   /* save first line as header not data */
-  t = sv_init(&c, my_sv_fields_callback, SV_FLAGS_SAVE_HEADER);
+  t = sv_init(&c, my_sv_fields_callback, '\t', SV_FLAGS_SAVE_HEADER);
   if(!t) {
     fprintf(stderr, "%s: Failed to init SV library", program);
     rc = 1;
