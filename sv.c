@@ -43,7 +43,8 @@ struct sv_s {
   
   /* row callback */
   void *callback_user_data;
-  sv_fields_callback callback;
+  sv_fields_callback header_callback;
+  sv_fields_callback data_callback;
 
   /* current buffer */
   char *buffer;
@@ -74,7 +75,9 @@ struct sv_s {
 
 
 sv*
-sv_init(void *user_data, sv_fields_callback callback, char field_sep, int flags)
+sv_init(void *user_data, sv_fields_callback header_callback,
+        sv_fields_callback data_callback,
+        char field_sep, int flags)
 {
   sv *t;
 
@@ -90,7 +93,8 @@ sv_init(void *user_data, sv_fields_callback callback, char field_sep, int flags)
   t->line = 0;
   
   t->callback_user_data = user_data;
-  t->callback = callback;
+  t->header_callback = header_callback;
+  t->data_callback = data_callback;
 
   t->buffer = NULL;
   t->size = 0;
@@ -459,15 +463,24 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
         char *s = (char*)malloc(t->fields_widths[i]+1);
         memcpy(s, t->fields[i], t->fields_widths[i]+1);
         t->headers[i] = s;
+        t->headers_widths[i] = t->fields_widths[i];
       }
+
+      if(t->header_callback) {
+        /* got header fields - return them to user */
+        status = t->header_callback(t, t->callback_user_data, t->headers, 
+                                    t->headers_widths, t->fields_count);
+      }
+
       goto skip;
     }
 
 
-    /* got fields - return them to user */
-    status = t->callback(t, t->callback_user_data, t->fields, t->fields_widths,
-                         t->fields_count);
-
+    if(t->data_callback) {
+      /* got data fields - return them to user */
+      status = t->data_callback(t, t->callback_user_data, t->fields, 
+                                t->fields_widths, t->fields_count);
+    }
     skip:
     
     /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
