@@ -78,7 +78,7 @@ sv_init(void *user_data, sv_fields_callback callback, char field_sep, int flags)
 {
   sv *t;
 
-  if(field_sep != '\t' || field_sep != ',')
+  if(field_sep != '\t' && field_sep != ',')
     return NULL;
   
   t = (sv*)malloc(sizeof(*t));
