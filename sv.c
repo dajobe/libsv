@@ -298,7 +298,7 @@ sv_dump_buffer(FILE* fh, const char* label, const char* buffer, size_t len)
 #endif
 
 
-static int
+static sv_status_t
 sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 {
   unsigned int column;
@@ -309,7 +309,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
   char* p = NULL;
   char** fields = t->fields;
   size_t* fields_widths = t->fields_widths;
-  sv_status_t status = SV_STATUS_OK;
+  sv_status_t status;
   int field_is_quoted = 0;
 
 #if defined(SV_DEBUG)
@@ -326,7 +326,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
     p = current_field;
 
     if(!p)
-      return status;
+      return SV_STATUS_OK;
   }
 
   for(column = 0; 1; column++) {
@@ -339,7 +339,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
       goto do_last;
     }
     
-    c= line[column];
+    c = line[column];
 
     if(c == '"') {
       if(!field_width) {
@@ -442,7 +442,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
     *field_count_p = field_offset + 1;
 
 
-  return status;
+  return SV_STATUS_OK;
 }
 
 
@@ -466,8 +466,9 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
   /* look for an end of line to do some work */
   for(offset = 0; offset < t->len; offset++) {
     size_t line_len;
-    unsigned int fields_count;
-
+    unsigned int fields_count = 0;
+    sv_status_t rc;
+    
     if(t->buffer[offset] != '\n')
       continue;
 
@@ -484,35 +485,39 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 
     if(!t->fields_count) {
       /* First line in the file - calculate number of fields */
-      if(sv_parse_line(t, t->buffer, line_len, &t->fields_count))
-        return 1;
+      rc = sv_parse_line(t, t->buffer, line_len, &t->fields_count);
+      if(rc)
+        return rc;
 
       /* initialise arrays of size t->fields_count */
-      if(sv_init_fields(t)) {
+      rc = sv_init_fields(t);
+      if(rc) {
         if(t->fields_buffer) {
           free(t->fields_buffer);
           t->fields_buffer_size = 0;
         }
-        return 1;
+        return rc;
       }
     }
     
-    if(sv_parse_line(t, t->buffer, line_len, &fields_count)) {
+    rc = sv_parse_line(t, t->buffer, line_len, &fields_count);
+    if(rc) {
       if(t->fields_buffer) {
         free(t->fields_buffer);
         t->fields_buffer_size = 0;
       }
       
-      return 1;
+      return rc;
     }
 
     if(fields_count != t->fields_count) {
       t->bad_records++;
       if(t->flags & SV_FLAGS_BAD_DATA_ERROR) {
-        /** ERROR **/
-        fprintf(stderr, "line %d: saw %d fields expected %d\n",
+#if defined(SV_DEBUG)
+        fprintf(stderr, "Error in line %d: saw %d fields expected %d\n",
                 t->line, fields_count, t->fields_count);
-        return 1;
+#endif
+        return SV_STATUS_LINE_FIELDS;
       }
 #if defined(SV_DEBUG)
       fprintf(stderr, "Ignoring line %d: saw %d fields expected %d\n",
