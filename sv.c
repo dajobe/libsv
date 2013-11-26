@@ -71,6 +71,8 @@ struct sv_s {
 
   /* error state */
   sv_status_t status;
+
+  int bad_records;
 };
 
 
@@ -113,6 +115,8 @@ sv_init(void *user_data, sv_fields_callback header_callback,
   t->flags = flags;
 
   t->status = SV_STATUS_OK;
+
+  t->bad_records = 0;
 
   return t;
 }
