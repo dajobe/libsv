@@ -314,7 +314,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 
 #if defined(SV_DEBUG)
   if(fields)
-    sv_dump_buffer(stderr, "Parsing line", line, len);
+    sv_dump_buffer(stderr, "(sv_parse_line): Parsing line", line, len);
 #endif
   
   status = sv_ensure_fields_buffer_size(t, len);
