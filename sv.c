@@ -208,7 +208,7 @@ sv_ensure_fields_buffer_size(sv *t, size_t len)
   
   nsize = len + 8;
 
-#if defined(SV_DEBUG)
+#if defined(SV_DEBUG) && SV_DEBUG > 1
   fprintf(stderr, "%d: Growing buffer from %d to %d bytes\n",
           t->line, (int)t->fields_buffer_size, (int)nsize);
 #endif
@@ -310,6 +310,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
   char** fields = t->fields;
   size_t* fields_widths = t->fields_widths;
   sv_status_t status = SV_STATUS_OK;
+  int field_is_quoted = 0;
 
 #if defined(SV_DEBUG)
   if(fields)
@@ -330,31 +331,65 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 
   for(column = 0; 1; column++) {
     int c = -1;
+    int field_ended = 0;
+    int expect_sep = 0;
 
-    if(column == len)
+    if(column == len) {
+      field_ended = 1;
       goto do_last;
+    }
     
     c= line[column];
 
-    if(c == '"')
-      quote_count++;
-    else
+    if(c == '"') {
+      if(!field_width) {
+        field_is_quoted = 1;
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+        fprintf(stderr, "Field is quoted\n");
+#endif
+        continue;
+      } else if(column == len-1 || line[column+1] == t->field_sep) {
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+        fprintf(stderr, "Field ended on quote + sep\n");
+#endif
+        field_ended = 1;
+        expect_sep = 1;
+        goto do_last;
+      } else {
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+        fprintf(stderr, "Inner quote\n");
+#endif
+        /* inner quote */
+        quote_count++;
+      }
+    } else
       quote_count = 0;
 
-    if(quote_count > 1) {
+    if(quote_count == 2) {
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+      fprintf(stderr, "Double quote absorbed\n");
+#endif
       quote_count = 0;
       /* skip repeated quote - so it just replaces ""... with " */
-      continue;
+      goto skip;
+    }
+
+    if(!field_is_quoted && c == t->field_sep) {
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+      fprintf(stderr, "Field ended on sep\n");
+#endif
+      field_ended = 1;
     }
 
     do_last:
-    if(c == t->field_sep || column == len) {
+    if(field_ended) {
       if(p)
         *p++ = '\0';
       
       if(fields) {
         /* Remove quotes around quoted field */
         if(field_width > 1 &&
+           field_is_quoted &&
            current_field[0] == '"' && 
            current_field[field_width-1] == '"') {
           field_width -= 2;
@@ -365,9 +400,13 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 
           current_field[field_width] = '\0';
         }
+
+        if(expect_sep)
+          column++;
+
       }
 
-#if defined(SV_DEBUG)
+#if defined(SV_DEBUG) && SV_DEBUG > 1
       if(fields) {
         fprintf(stderr, "  Field %d: %s (%d)\n", (int)field_offset, current_field, (int)field_width);
       }
@@ -384,13 +423,15 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
       /* otherwise got a tab so reset for next field */
       quote_count = 0;
       field_width = 0;
+      field_is_quoted = 0;
 
       field_offset++;
       current_field = p;
 
       continue;
     }
-    
+
+    skip:
     if(fields)
       *p++ = c;
     field_width++;
@@ -430,7 +471,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     if(t->buffer[offset] != '\n')
       continue;
 
-#if defined(SV_DEBUG)
+#if defined(SV_DEBUG) && SV_DEBUG > 1
     sv_dump_buffer(stderr, "Starting buffer", t->buffer, t->len);
 #endif
 
@@ -439,7 +480,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     line_len = offset;
 
     if(!line_len)
-      goto skip;
+      goto skip_line;
 
     if(!t->fields_count) {
       /* First line in the file - calculate number of fields */
@@ -466,10 +507,19 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     }
 
     if(fields_count != t->fields_count) {
-      /** ERROR **/
-      fprintf(stderr, "line %d: saw %d fields expected %d\n",
-              t->line, fields_count, t->fields_count);
-      return 1;
+      t->bad_records++;
+      if(t->flags & SV_FLAGS_BAD_DATA_ERROR) {
+        /** ERROR **/
+        fprintf(stderr, "line %d: saw %d fields expected %d\n",
+                t->line, fields_count, t->fields_count);
+        return 1;
+      }
+#if defined(SV_DEBUG)
+      fprintf(stderr, "Ignoring line %d: saw %d fields expected %d\n",
+                t->line, fields_count, t->fields_count);
+#endif
+      /* Otherwise skip the line */
+      goto skip_line;
     }
 
 
@@ -490,7 +540,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
                                     t->headers_widths, t->fields_count);
       }
 
-      goto skip;
+      goto skip_line;
     }
 
 
@@ -499,7 +549,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
       status = t->data_callback(t, t->callback_user_data, t->fields, 
                                 t->fields_widths, t->fields_count);
     }
-    skip:
+    skip_line:
     
     /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
     t->len -= line_len+1;
