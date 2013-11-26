@@ -413,9 +413,18 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     if(t->buffer[offset] != '\n')
       continue;
 
+#if defined(SV_DEBUG)
+    fprintf(stderr, "%d: Starting buffer >>>", t->line);
+    fwrite(t->buffer, 1, t->len, stderr);
+    fputs("<<\n", stderr);
+#endif
+
     /* found a line */
     fields_count = 0;
     line_len = offset;
+
+    if(!line_len)
+      goto skip;
 
     if(!t->fields_count) {
       /* First line in the file - calculate number of fields */
@@ -483,12 +492,16 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     /* this is an overlapping move */
     memmove(t->buffer, &t->buffer[line_len+1], t->len);
 
+#if defined(SV_DEBUG)
+    fputs("Buffer is now >>>", stderr);
+    fwrite(t->buffer, 1, t->len, stderr);
+    fputs("<<\n", stderr);
+#endif
     /* This is not needed: guaranteed above */
     /* t->buffer[t->len] = '\0' */
 
-    offset = 0;
-    
     t->line++;
+    offset = -1; /* so for loop starts at 0 */
     
     if(status)
       break;
