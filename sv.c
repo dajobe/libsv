@@ -441,7 +441,6 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
   if(field_count_p)
     *field_count_p = field_offset + 1;
 
-
   return SV_STATUS_OK;
 }
 
@@ -467,7 +466,6 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
   for(offset = 0; offset < t->len; offset++) {
     size_t line_len;
     unsigned int fields_count = 0;
-    sv_status_t rc;
     
     if(t->buffer[offset] != '\n')
       continue;
@@ -485,31 +483,20 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 
     if(!t->fields_count) {
       /* First line in the file - calculate number of fields */
-      rc = sv_parse_line(t, t->buffer, line_len, &t->fields_count);
-      if(rc)
-        return rc;
+      status = sv_parse_line(t, t->buffer, line_len, &t->fields_count);
+      if(status)
+        goto tidy;
 
       /* initialise arrays of size t->fields_count */
-      rc = sv_init_fields(t);
-      if(rc) {
-        if(t->fields_buffer) {
-          free(t->fields_buffer);
-          t->fields_buffer_size = 0;
-        }
-        return rc;
-      }
+      status = sv_init_fields(t);
+      if(status)
+        goto tidy;
     }
     
-    rc = sv_parse_line(t, t->buffer, line_len, &fields_count);
-    if(rc) {
-      if(t->fields_buffer) {
-        free(t->fields_buffer);
-        t->fields_buffer_size = 0;
-      }
-      
-      return rc;
-    }
-
+    status = sv_parse_line(t, t->buffer, line_len, &fields_count);
+    if(status)
+      goto tidy;
+    
     if(fields_count != t->fields_count) {
       t->bad_records++;
       if(t->flags & SV_FLAGS_BAD_DATA_ERROR) {
@@ -517,7 +504,8 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
         fprintf(stderr, "Error in line %d: saw %d fields expected %d\n",
                 t->line, fields_count, t->fields_count);
 #endif
-        return SV_STATUS_LINE_FIELDS;
+        status = SV_STATUS_LINE_FIELDS;
+        goto tidy;
       }
 #if defined(SV_DEBUG)
       fprintf(stderr, "Ignoring line %d: saw %d fields expected %d\n",
@@ -553,7 +541,6 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
                                   t->fields_widths, t->fields_count);
       }
     }
-        
 
     skip_line:
     
@@ -568,10 +555,9 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 
     t->line++;
     offset = -1; /* so for loop starts at 0 */
-    
-    if(status)
-      break;
   }
   
+tidy:
+
   return status;
 }
