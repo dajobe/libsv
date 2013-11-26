@@ -90,7 +90,7 @@ sv_init(void *user_data, sv_fields_callback header_callback,
   
   t->field_sep = field_sep;
 
-  t->line = 0;
+  t->line = 1;
   
   t->callback_user_data = user_data;
   t->header_callback = header_callback;
@@ -458,7 +458,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     }
 
 
-    if(!t->line && (t->flags & SV_FLAGS_SAVE_HEADER)) {
+    if(t->line == 1 && (t->flags & SV_FLAGS_SAVE_HEADER)) {
       /* first line so save fields as headers */
       unsigned int i;
       
