@@ -99,7 +99,9 @@ main(int argc, char *argv[])
   FILE *fh = NULL;
   sv *t = NULL;
   myc c;
-
+  size_t data_file_len;
+  char sep = '\t'; /* default is TSV */
+  
   program = "example";
   
   if(argc != 2) {
@@ -128,9 +130,18 @@ main(int argc, char *argv[])
   c.filename = data_file;
   c.count = 0;
 
+  data_file_len = strlen(data_file);
+
+  if(data_file_len > 4) {
+    if(!strcmp(data_file + data_file_len - 3, "csv"))
+      sep = ',';
+    else if(!strcmp(data_file + data_file_len - 3, "tsv"))
+      sep = '\t';
+  }
+  
   /* save first line as header not data */
   t = sv_init(&c, my_sv_header_callback, my_sv_fields_callback, 
-              '\t', SV_FLAGS_SAVE_HEADER);
+              sep, SV_FLAGS_SAVE_HEADER);
   if(!t) {
     fprintf(stderr, "%s: Failed to init SV library", program);
     rc = 1;
