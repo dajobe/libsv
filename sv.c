@@ -529,7 +529,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 
 
     if(t->line == 1 && (t->flags & SV_FLAGS_SAVE_HEADER)) {
-      /* first line so save fields as headers */
+      /* first line and header: turn fields into headers */
       unsigned int i;
       
       for(i = 0; i < t->fields_count; i++) {
@@ -544,16 +544,17 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
         status = t->header_callback(t, t->callback_user_data, t->headers, 
                                     t->headers_widths, t->fields_count);
       }
+    } else {
+      /* data */
 
-      goto skip_line;
+      if(t->data_callback) {
+        /* got data fields - return them to user */
+        status = t->data_callback(t, t->callback_user_data, t->fields, 
+                                  t->fields_widths, t->fields_count);
+      }
     }
+        
 
-
-    if(t->data_callback) {
-      /* got data fields - return them to user */
-      status = t->data_callback(t, t->callback_user_data, t->fields, 
-                                t->fields_widths, t->fields_count);
-    }
     skip_line:
     
     /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
