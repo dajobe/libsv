@@ -277,6 +277,22 @@ sv_get_header(sv *t, unsigned int i, size_t *width_p)
 }
 
 
+#if defined(SV_DEBUG)
+static void
+sv_dump_buffer(FILE* fh, const char* label, const char* buffer, size_t len) 
+{
+  size_t mylen=len;
+  
+  fprintf(fh, "%s (%zu bytes) >>>", label, len);
+  if(mylen > 100)
+    mylen = 100;
+  fwrite(buffer, 1, mylen, fh);
+  if(mylen != len)
+    fputs("...", fh);
+  fputs("<<<\n", fh);
+}
+#endif
+
 
 static int
 sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
@@ -292,11 +308,8 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
   sv_status_t status = SV_STATUS_OK;
 
 #if defined(SV_DEBUG)
-  if(fields) {
-    fprintf(stderr, "Parsing line (%d bytes)\n  >>", (int)len);
-    fwrite(line, 1, len, stderr);
-    fputs("<<\n", stderr);
-  }
+  if(fields)
+    sv_dump_buffer(stderr, "Parsing line", line, len);
 #endif
   
   status = sv_ensure_fields_buffer_size(t, len);
@@ -414,9 +427,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
       continue;
 
 #if defined(SV_DEBUG)
-    fprintf(stderr, "%d: Starting buffer >>>", t->line);
-    fwrite(t->buffer, 1, t->len, stderr);
-    fputs("<<\n", stderr);
+    sv_dump_buffer(stderr, "Starting buffer", t->buffer, t->len);
 #endif
 
     /* found a line */
@@ -492,11 +503,6 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     /* this is an overlapping move */
     memmove(t->buffer, &t->buffer[line_len+1], t->len);
 
-#if defined(SV_DEBUG)
-    fputs("Buffer is now >>>", stderr);
-    fwrite(t->buffer, 1, t->len, stderr);
-    fputs("<<\n", stderr);
-#endif
     /* This is not needed: guaranteed above */
     /* t->buffer[t->len] = '\0' */
 
