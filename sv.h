@@ -24,7 +24,8 @@
 typedef enum {
   SV_STATUS_OK = 0,
   SV_STATUS_FAILED,
-  SV_STATUS_NO_MEMORY
+  SV_STATUS_NO_MEMORY,
+  SV_STATUS_LINE_FIELDS
 } sv_status_t;
   
 
