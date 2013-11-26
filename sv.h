@@ -33,6 +33,8 @@ typedef sv_status_t (*sv_fields_callback)(sv *t, void *user_data, char** fields,
 
 /* bit flags for sv_init() */
 #define SV_FLAGS_SAVE_HEADER (1<<0)
+/* error out on bad data lines */
+#define SV_FLAGS_BAD_DATA_ERROR (1<<1)
 
 sv* sv_init(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep, int flags);
 void sv_free(sv *t);
