@@ -324,12 +324,6 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
     else
       quote_count = 0;
 
-#if defined(SV_DEBUG)
-    if(fields) {
-      fprintf(stderr, "  Column %d: c %c  qc %d  width %d\n", column, c, quote_count, (int)field_width);
-    }
-#endif
-      
     if(quote_count > 1) {
       quote_count = 0;
       /* skip repeated quote - so it just replaces ""... with " */
@@ -358,7 +352,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 
 #if defined(SV_DEBUG)
       if(fields) {
-        fprintf(stderr, "  Field %d: width %d\n", (int)field_offset, (int)field_width);
+        fprintf(stderr, "  Field %d: %s (%d)\n", (int)field_offset, current_field, (int)field_width);
       }
 #endif
       if(fields)
