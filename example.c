@@ -44,8 +44,12 @@
 /* structure used for user data callback */
 typedef struct 
 {
+  const char* filename;
   int count;
 } myc;
+
+
+const char* program;
 
 
 static sv_status_t
@@ -53,8 +57,10 @@ my_sv_header_callback(sv *t, void *user_data,
                       char** fields, size_t *widths, size_t count)
 {
   unsigned int i;
+  myc *c=(myc*)user_data;
   
-  fprintf(stdout, "Header with %d fields\n",  (int)count);
+  fprintf(stdout, "%s:%d: Header with %d fields\n",
+          c->filename, sv_get_line(t), (int)count);
   for(i = 0; i < count; i++)
     fprintf(stdout, "%3d: '%s' (width %d)\n", (int)i,
             fields[i], (int)widths[i]);
@@ -73,8 +79,8 @@ my_sv_fields_callback(sv *t, void *user_data,
   
   c->count++;
   
-  fprintf(stdout, "Line %d: Record with %d fields\n",
-          sv_get_line(t), (int)count);
+  fprintf(stdout, "%s:%d: Record with %d fields\n",
+          c->filename, sv_get_line(t), (int)count);
   for(i = 0; i < count; i++)
     fprintf(stdout, 
             "%3d %-10s: '%s' (width %d)\n", (int)i,
@@ -85,8 +91,6 @@ my_sv_fields_callback(sv *t, void *user_data,
 }
 
 
-const char *program="example";
-
 int
 main(int argc, char *argv[])
 {
@@ -95,6 +99,8 @@ main(int argc, char *argv[])
   FILE *fh = NULL;
   sv *t = NULL;
   myc c;
+
+  program = "example";
   
   if(argc != 2) {
     fprintf(stderr, "USAGE: %s [SV FILE]\n", program);
@@ -118,6 +124,8 @@ main(int argc, char *argv[])
     goto tidy;
   }
 
+  memset(&c, sizeof(c), '\0');
+  c.filename = data_file;
   c.count = 0;
 
   /* save first line as header not data */
