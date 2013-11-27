@@ -132,7 +132,7 @@ sv_init(void *user_data, sv_fields_callback header_callback,
 }
 
 
-static int
+static sv_status_t
 sv_init_fields(sv *t) 
 {
   t->fields = (char**)malloc(sizeof(char*) * (t->fields_count+1));
@@ -207,7 +207,7 @@ sv_free(sv *t)
 
 
 /* Ensure fields buffer is big enough for len bytes total */
-static int
+static sv_status_t
 sv_ensure_fields_buffer_size(sv *t, size_t len)
 {
   char *nbuffer;
@@ -592,15 +592,12 @@ tidy:
 }
 
 
-static int
+static sv_status_t
 sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
 {
-  int rc = 0;
+  sv_status_t status = SV_STATUS_OK;
 
   switch(option) {
-    case SV_OPTION_NONE:
-      break;
-
     case SV_OPTION_SAVE_HEADER:
       t->flags &= ~SV_FLAGS_SAVE_HEADER;
       if(va_arg(arg, long))
@@ -612,21 +609,27 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       if(va_arg(arg, long))
          t->flags |= SV_FLAGS_BAD_DATA_ERROR;
       break;
+
+    default:
+    case SV_OPTION_NONE:
+      status = SV_STATUS_FAILED;
+      break;
+
   }
 
-  return rc;
+  return status;
 }
   
 
-int
+sv_status_t
 sv_set_option(sv *t, sv_option_t option, ...)
 {
-  int rc;
+  sv_status_t status;
   va_list arg;
 
   va_start(arg, option);
-  rc = sv_set_option_vararg(t, option, arg);
+  status = sv_set_option_vararg(t, option, arg);
   va_end(arg);
 
-  return rc;
+  return status;
 }

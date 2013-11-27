@@ -2,7 +2,7 @@
  *
  * sv.h - Header for libsv
  *
- * Copyright (C) 2009, David Beckett http://www.dajobe.org/
+ * Copyright (C) 2009-2013, David Beckett http://www.dajobe.org/
  * 
  * This package is Free Software
  * 
@@ -40,7 +40,7 @@ typedef enum {
 sv* sv_init(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep);
 void sv_free(sv *t);
 
-int sv_set_option(sv *t, sv_option_t option, ...);
+sv_status_t sv_set_option(sv *t, sv_option_t option, ...);
 
 int sv_get_line(sv *t);
 const char* sv_get_header(sv *t, unsigned int i, size_t *width_p);
