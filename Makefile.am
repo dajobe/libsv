@@ -23,9 +23,10 @@ example_SOURCES = example.c
 example_LDADD = libsv.la
 
 EXTRA_DIST = \
+test1.csv \
+zero.tsv
 one.tsv \
 test1.tsv
-
 
 CLEANFILES= \
 example \
