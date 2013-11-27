@@ -24,7 +24,7 @@ example_LDADD = libsv.la
 
 EXTRA_DIST = \
 test1.csv \
-zero.tsv
+zero.tsv \
 one.tsv \
 test1.tsv
 
