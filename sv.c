@@ -78,6 +78,8 @@ struct sv_s {
   sv_status_t status;
 
   int bad_records;
+
+  char last_char;
 };
 
 
@@ -123,6 +125,8 @@ sv_init(void *user_data, sv_fields_callback header_callback,
   t->status = SV_STATUS_OK;
 
   t->bad_records = 0;
+
+  t->last_char = '\0';
 
   return t;
 }
@@ -470,11 +474,30 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 
   /* look for an end of line to do some work */
   for(offset = 0; offset < t->len; offset++) {
-    size_t line_len;
+    size_t line_len = 0;
     unsigned int fields_count = 0;
-    
-    if(t->buffer[offset] != '\n')
+    char c = t->buffer[offset];
+
+    /* skip \n when just seen \r - i.e. \r\n or CR LF */
+    if(t->last_char == '\r' && c == '\n') {
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+      fprintf(stderr, "Skipping a \\n after \\r\n");
+#endif
+
+      /* adjust buffer */
+      t->len -= 1;
+
+      /* this is an overlapping move */
+      memmove(t->buffer, &t->buffer[1], t->len);
+
+      t->last_char = '\0';
       continue;
+    }
+
+    if(c != '\r' && c != '\n')
+      continue;
+
+    t->last_char = c;
 
 #if defined(SV_DEBUG) && SV_DEBUG > 1
     sv_dump_buffer(stderr, "Starting buffer", t->buffer, t->len);
