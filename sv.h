@@ -27,18 +27,20 @@ typedef enum {
   SV_STATUS_NO_MEMORY,
   SV_STATUS_LINE_FIELDS
 } sv_status_t;
-  
 
 typedef struct sv_s sv;
 typedef sv_status_t (*sv_fields_callback)(sv *t, void *user_data, char** fields, size_t *widths, size_t count);
 
-/* bit flags for sv_init() */
-#define SV_FLAGS_SAVE_HEADER (1<<0)
-/* error out on bad data lines */
-#define SV_FLAGS_BAD_DATA_ERROR (1<<1)
+typedef enum {
+  SV_OPTION_NONE = 0,
+  SV_OPTION_SAVE_HEADER,
+  SV_OPTION_BAD_DATA_ERROR
+} sv_option_t;
 
-sv* sv_init(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep, int flags);
+sv* sv_init(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep);
 void sv_free(sv *t);
+
+int sv_set_option(sv *t, sv_option_t option, ...);
 
 int sv_get_line(sv *t);
 const char* sv_get_header(sv *t, unsigned int i, size_t *width_p);

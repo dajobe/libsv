@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -34,6 +35,10 @@
 
 #include <sv.h>
 
+/* bit flags */
+#define SV_FLAGS_SAVE_HEADER (1<<0)
+/* error out on bad data lines */
+#define SV_FLAGS_BAD_DATA_ERROR (1<<1)
 
 struct sv_s {
   /* field separator: '\t' or ',' */
@@ -67,7 +72,7 @@ struct sv_s {
   char **headers;
   size_t *headers_widths;
 
-  int flags;
+  unsigned int flags;
 
   /* error state */
   sv_status_t status;
@@ -79,7 +84,7 @@ struct sv_s {
 sv*
 sv_init(void *user_data, sv_fields_callback header_callback,
         sv_fields_callback data_callback,
-        char field_sep, int flags)
+        char field_sep)
 {
   sv *t;
 
@@ -112,7 +117,8 @@ sv_init(void *user_data, sv_fields_callback header_callback,
   t->headers = NULL;
   t->headers_widths = NULL;
 
-  t->flags = flags;
+  /* default flags */
+  t->flags = SV_OPTION_SAVE_HEADER;
 
   t->status = SV_STATUS_OK;
 
@@ -560,4 +566,44 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 tidy:
 
   return status;
+}
+
+
+static int
+sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
+{
+  int rc = 0;
+
+  switch(option) {
+    case SV_OPTION_NONE:
+      break;
+
+    case SV_OPTION_SAVE_HEADER:
+      t->flags &= ~SV_FLAGS_SAVE_HEADER;
+      if(va_arg(arg, long))
+         t->flags |= SV_FLAGS_SAVE_HEADER;
+      break;
+
+    case SV_OPTION_BAD_DATA_ERROR:
+      t->flags &= ~SV_FLAGS_BAD_DATA_ERROR;
+      if(va_arg(arg, long))
+         t->flags |= SV_FLAGS_BAD_DATA_ERROR;
+      break;
+  }
+
+  return rc;
+}
+  
+
+int
+sv_set_option(sv *t, sv_option_t option, ...)
+{
+  int rc;
+  va_list arg;
+
+  va_start(arg, option);
+  rc = sv_set_option_vararg(t, option, arg);
+  va_end(arg);
+
+  return rc;
 }
