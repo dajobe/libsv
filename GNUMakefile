@@ -1,7 +1,11 @@
 SRCS=example.c sv.c sv.h
 EXE=example
+TESTS=test1.csv \
+zero.tsv \
+one.tsv \
+test1.tsv
 FILES=README COPYING COPYING.LIB LICENSE-2.0.txt LICENSE.txt NOTICE \
-test1.sv \
+$(TESTS) \
 $(SRCS)
 
 PACKAGE=libsv
