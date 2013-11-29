@@ -36,9 +36,12 @@
 #include <sv.h>
 
 /* bit flags */
-#define SV_FLAGS_SAVE_HEADER (1<<0)
+#define SV_FLAGS_SAVE_HEADER    (1<<0)
 /* error out on bad data lines */
 #define SV_FLAGS_BAD_DATA_ERROR (1<<1)
+/* allow fields to be quoted */
+#define SV_FLAGS_QUOTED_FIELDS  (1<<2)
+
 
 struct sv_s {
   /* field separator: '\t' or ',' */
@@ -120,7 +123,7 @@ sv_init(void *user_data, sv_fields_callback header_callback,
   t->headers_widths = NULL;
 
   /* default flags */
-  t->flags = SV_OPTION_SAVE_HEADER;
+  t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
 
   t->status = SV_STATUS_OK;
 
@@ -351,37 +354,39 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
     
     c = line[column];
 
-    if(c == '"') {
-      if(!field_width) {
-        field_is_quoted = 1;
-#if defined(SV_DEBUG) && SV_DEBUG > 1
-        fprintf(stderr, "Field is quoted\n");
-#endif
-        continue;
-      } else if(column == len-1 || line[column+1] == t->field_sep) {
-#if defined(SV_DEBUG) && SV_DEBUG > 1
-        fprintf(stderr, "Field ended on quote + sep\n");
-#endif
-        field_ended = 1;
-        expect_sep = 1;
-        goto do_last;
-      } else {
-#if defined(SV_DEBUG) && SV_DEBUG > 1
-        fprintf(stderr, "Inner quote\n");
-#endif
-        /* inner quote */
-        quote_count++;
-      }
-    } else
-      quote_count = 0;
+    if(t->flags & SV_FLAGS_QUOTED_FIELDS) {
+      if(c == '"') {
+        if(!field_width) {
+          field_is_quoted = 1;
+  #if defined(SV_DEBUG) && SV_DEBUG > 1
+          fprintf(stderr, "Field is quoted\n");
+  #endif
+          continue;
+        } else if(column == len-1 || line[column+1] == t->field_sep) {
+  #if defined(SV_DEBUG) && SV_DEBUG > 1
+          fprintf(stderr, "Field ended on quote + sep\n");
+  #endif
+          field_ended = 1;
+          expect_sep = 1;
+          goto do_last;
+        } else {
+  #if defined(SV_DEBUG) && SV_DEBUG > 1
+          fprintf(stderr, "Inner quote\n");
+  #endif
+          /* inner quote */
+          quote_count++;
+        }
+      } else
+        quote_count = 0;
 
-    if(quote_count == 2) {
-#if defined(SV_DEBUG) && SV_DEBUG > 1
-      fprintf(stderr, "Double quote absorbed\n");
-#endif
-      quote_count = 0;
-      /* skip repeated quote - so it just replaces ""... with " */
-      goto skip;
+      if(quote_count == 2) {
+  #if defined(SV_DEBUG) && SV_DEBUG > 1
+        fprintf(stderr, "Double quote absorbed\n");
+  #endif
+        quote_count = 0;
+        /* skip repeated quote - so it just replaces ""... with " */
+        goto skip;
+      }
     }
 
     if(!field_is_quoted && c == t->field_sep) {
@@ -601,13 +606,19 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
     case SV_OPTION_SAVE_HEADER:
       t->flags &= ~SV_FLAGS_SAVE_HEADER;
       if(va_arg(arg, long))
-         t->flags |= SV_FLAGS_SAVE_HEADER;
+        t->flags |= SV_FLAGS_SAVE_HEADER;
       break;
 
     case SV_OPTION_BAD_DATA_ERROR:
       t->flags &= ~SV_FLAGS_BAD_DATA_ERROR;
       if(va_arg(arg, long))
-         t->flags |= SV_FLAGS_BAD_DATA_ERROR;
+        t->flags |= SV_FLAGS_BAD_DATA_ERROR;
+      break;
+
+    case SV_OPTION_QUOTED_FIELDS:
+      t->flags &= ~SV_FLAGS_QUOTED_FIELDS;
+      if(va_arg(arg, long))
+        t->flags |= SV_FLAGS_QUOTED_FIELDS;
       break;
 
     default:
