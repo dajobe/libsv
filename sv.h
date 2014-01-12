@@ -36,7 +36,8 @@ typedef enum {
   SV_OPTION_SAVE_HEADER,
   SV_OPTION_BAD_DATA_ERROR,
   SV_OPTION_QUOTED_FIELDS,
-  SV_OPTION_STRIP_WHITESPACE
+  SV_OPTION_STRIP_WHITESPACE,
+  SV_OPTION_QUOTE_CHAR
 } sv_option_t;
 
 sv* sv_init(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep);
