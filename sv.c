@@ -415,6 +415,8 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 
           while(field_width > 0 && isspace(current_field[field_width - 1]))
             field_width--;
+
+          current_field[field_width] = '\0';
         }
 
         if(field_width > 1) {
