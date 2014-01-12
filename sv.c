@@ -297,7 +297,7 @@ sv_get_header(sv *t, unsigned int i, size_t *width_p)
 }
 
 
-#if defined(SV_DEBUG)
+#if defined(SV_DEBUG) && SV_DEBUG > 1
 static void
 sv_dump_buffer(FILE* fh, const char* label, const char* buffer, size_t len) 
 {
@@ -328,7 +328,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
   sv_status_t status;
   int field_is_quoted = 0;
 
-#if defined(SV_DEBUG)
+#if defined(SV_DEBUG) && SV_DEBUG > 1
   if(fields)
     sv_dump_buffer(stderr, "(sv_parse_line): Parsing line", line, len);
 #endif
@@ -550,7 +550,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     if(fields_count != t->fields_count) {
       t->bad_records++;
       if(t->flags & SV_FLAGS_BAD_DATA_ERROR) {
-#if defined(SV_DEBUG)
+#if defined(SV_DEBUG) && SV_DEBUG > 1
         fprintf(stderr, "Error in line %d: saw %d fields expected %d\n",
                 t->line, fields_count, t->fields_count);
 #endif
