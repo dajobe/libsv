@@ -7,4 +7,4 @@ language: c
 compiler:
   - gcc
   - clang
-make -f GNUMakefile && make -f GNUMakefile check
+script: make -f GNUMakefile && make -f GNUMakefile check
