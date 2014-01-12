@@ -7,4 +7,4 @@ language: c
 compiler:
   - gcc
   - clang
-script: ./autogen.sh && make && make test
+make -f GNUMakefile && make -f GNUMakefile check
