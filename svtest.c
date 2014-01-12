@@ -47,7 +47,7 @@ char* program;
 typedef struct 
 {
   char sep;
-  unsigned int flags;
+  unsigned int option;
   const char* data;
   const char** const expected;
   int columns_count;
@@ -67,12 +67,13 @@ typedef struct
 } myc;
 
 
-#define N_TESTS 2
+#define N_TESTS 3
 static const char* const expected_1[4] = {"a", "b", "1", "2" };
 
 static const my_test_data test_data[N_TESTS + 1] = {
   { ',',  0, "a,b\n1,2\n",   (const char** const)expected_1, 2, 1 },
   { '\t', 0, "a\tb\n1\t2\n", (const char** const)expected_1, 2, 1 },
+  { ',', SV_OPTION_STRIP_WHITESPACE, "  a\t , \tb  \n  1\t , \t 2\n", (const char** const)expected_1, 2, 1 },
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
 
@@ -96,7 +97,7 @@ my_sv_header_callback(sv *t, void *user_data,
     const char* expected_header = c->expected->expected[ix];
 
     if(strcmp(header, expected_header)) {
-      fprintf(stderr, "%s: TEST %d failed - got header '%s' expected '%s'\n", 
+      fprintf(stderr, "%s: Test %d FAIL - got header '%s' expected '%s'\n", 
               program, c->test_index, header, expected_header);
       c->header_errors++;
     }
@@ -119,8 +120,9 @@ my_sv_fields_callback(sv *t, void *user_data,
     const char* expected_data = c->expected->expected[ix];
 
     if(strcmp(data, expected_data)) {
-      fprintf(stderr, "%s: TEST %d failed - got data '%s' expected '%s'\n", 
-              program, c->test_index, data, expected_data);
+      fprintf(stderr,
+              "%s: Test %d FAIL row %d - got data '%s' expected '%s'\n", 
+              program, c->test_index, c->rows_count, data, expected_data);
       c->data_errors++;
     }
   }
@@ -175,6 +177,9 @@ main(int argc, char *argv[])
       rc = 1;
       goto tidy;
     }
+
+    if(test->option != 0)
+      sv_set_option(t, (sv_option_t)test->option, 1L);
 
     status = sv_parse_chunk(t, (char*)test->data, data_len);
     if(status != SV_STATUS_OK) {
