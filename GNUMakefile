@@ -1,11 +1,13 @@
 SRCS=example.c sv.c sv.h
 EXE=example
-TESTS=test1.csv \
+TESTS=svtest
+TEST_FILES=test1.csv \
 zero.tsv \
 one.tsv \
 test1.tsv
+
 FILES=README COPYING COPYING.LIB LICENSE-2.0.txt LICENSE.txt NOTICE \
-$(TESTS) \
+$(TEST_FILES) \
 $(SRCS)
 
 PACKAGE=libsv
@@ -30,3 +32,17 @@ dist: $(FILES)
 
 clean:
 	rm -f *.o *~ *.tar.gz $(EXE)
+
+check: $(TESTS)
+	@rc=0; \
+	for t in $(TESTS); do \
+	  echo "Running test $$t"; \
+	  ./$$t; \
+	  status=$$?; \
+	  if test $$status != 0; then \
+	    rc=1; \
+	  fi; \
+	done; \
+	exit $$rc
+
+svtest: svtest.o sv.o
