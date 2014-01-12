@@ -71,8 +71,8 @@ typedef struct
 static const char* const expected_1[4] = {"a", "b", "1", "2" };
 
 static const my_test_data test_data[N_TESTS + 1] = {
-  { ',',  0, "a,b\n1,2\n",   expected_1, 2, 1 },
-  { '\t', 0, "a\tb\n1\t2\n", expected_1, 2, 1 },
+  { ',',  0, "a,b\n1,2\n",   (const char** const)expected_1, 2, 1 },
+  { '\t', 0, "a\tb\n1\t2\n", (const char** const)expected_1, 2, 1 },
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
 
