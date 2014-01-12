@@ -28,9 +28,18 @@ zero.tsv \
 one.tsv \
 test1.tsv
 
-CLEANFILES= \
-example \
+
+TESTS=svtest$(EXEEXT)
+
+EXTRA_PROGRAMS=$(TESTS)
+
+CLEANFILES=$(TESTS) \
+example$(EXEEXT) \
 *.plist
+
+svtest_SOURCES = svtest.c
+svtest_LDADD = $(builddir)/libsv.la
+
 
 
 if MAINTAINER_MODE

@@ -1,10 +1,13 @@
+*.lo
+*.log
+*.o
+*.tar.gz
+*.trs
 .deps
 .libs
-*.o
-*.lo
-*.tar.gz
 Makefile
 Makefile.in
 TAGS
 example
 libsv.la
+svtest
