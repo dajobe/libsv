@@ -86,6 +86,8 @@ struct sv_s {
   int bad_records;
 
   char last_char;
+
+  char quote_char;
 };
 
 
@@ -133,6 +135,8 @@ sv_init(void *user_data, sv_fields_callback header_callback,
   t->bad_records = 0;
 
   t->last_char = '\0';
+
+  t->quote_char = '"';
 
   return t;
 }
@@ -358,7 +362,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
     c = line[column];
 
     if(t->flags & SV_FLAGS_QUOTED_FIELDS) {
-      if(c == '"') {
+      if(c == t->quote_char) {
         if(!field_width) {
           field_is_quoted = 1;
   #if defined(SV_DEBUG) && SV_DEBUG > 1
@@ -422,8 +426,8 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
         if(field_width > 1) {
           /* Remove quotes around quoted field */
           if(field_is_quoted &&
-             current_field[0] == '"' &&
-             current_field[field_width-1] == '"') {
+             current_field[0] == t->quote_char &&
+             current_field[field_width-1] == t->quote_char) {
             field_width -= 2;
 
             /* save a memcpy: move the start of the field forward a byte */
@@ -642,6 +646,14 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       t->flags &= ~SV_FLAGS_STRIP_WHITESPACE;
       if(va_arg(arg, long))
         t->flags |= SV_FLAGS_STRIP_WHITESPACE;
+      break;
+
+    case SV_OPTION_QUOTE_CHAR:
+      if(1) {
+        int c = va_arg(arg, int);
+        if(c != t->field_sep)
+          t->quote_char = c;
+      }
       break;
 
     default:
