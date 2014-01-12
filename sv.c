@@ -149,7 +149,7 @@ sv_init_fields(sv *t)
   if(!t->fields)
     goto failed;
     
-  t->fields_widths = (size_t*)malloc(sizeof(size_t*) * (t->fields_count+1));
+  t->fields_widths = (size_t*)malloc(sizeof(size_t) * (t->fields_count+1));
   if(!t->fields_widths)
     goto failed;
 
@@ -157,7 +157,7 @@ sv_init_fields(sv *t)
   if(!t->headers)
     goto failed;
   
-  t->headers_widths = (size_t*)malloc(sizeof(size_t*) * (t->fields_count+1));
+  t->headers_widths = (size_t*)malloc(sizeof(size_t) * (t->fields_count+1));
   if(!t->headers_widths)
     goto failed;
 
