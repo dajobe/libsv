@@ -2,7 +2,7 @@
  *
  * sv.c - Parse separated-values (CSV, TSV) files
  *
- * Copyright (C) 2009-2013, David Beckett http://www.dajobe.org/
+ * Copyright (C) 2009-2014, David Beckett http://www.dajobe.org/
  * 
  * This package is Free Software
  * 
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -41,6 +42,8 @@
 #define SV_FLAGS_BAD_DATA_ERROR (1<<1)
 /* allow fields to be quoted */
 #define SV_FLAGS_QUOTED_FIELDS  (1<<2)
+/* strip (non-separator) whitespace around fields */
+#define SV_FLAGS_STRIP_WHITESPACE  (1<<3)
 
 
 struct sv_s {
@@ -402,18 +405,31 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
         *p++ = '\0';
       
       if(fields) {
-        /* Remove quotes around quoted field */
-        if(field_width > 1 &&
-           field_is_quoted &&
-           current_field[0] == '"' && 
-           current_field[field_width-1] == '"') {
-          field_width -= 2;
 
-          /* save a memcpy: move the start of the field forward a byte */
-          /* memcpy(&current_field[0], &current_field[1], field_width); */
-          current_field++;
+        if(t->flags & SV_FLAGS_STRIP_WHITESPACE) {
+          /* Remove whitespace around a field */
+          while(field_width > 0 && isspace(current_field[0])) {
+            current_field++;
+            field_width--;
+          }
 
-          current_field[field_width] = '\0';
+          while(field_width > 0 && isspace(current_field[field_width - 1]))
+            field_width--;
+        }
+
+        if(field_width > 1) {
+          /* Remove quotes around quoted field */
+          if(field_is_quoted &&
+             current_field[0] == '"' &&
+             current_field[field_width-1] == '"') {
+            field_width -= 2;
+
+            /* save a memcpy: move the start of the field forward a byte */
+            /* memcpy(&current_field[0], &current_field[1], field_width); */
+            current_field++;
+
+            current_field[field_width] = '\0';
+          }
         }
 
         if(expect_sep)
@@ -549,7 +565,6 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
       goto skip_line;
     }
 
-
     if(t->line == 1 && (t->flags & SV_FLAGS_SAVE_HEADER)) {
       /* first line and header: turn fields into headers */
       unsigned int i;
@@ -619,6 +634,12 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       t->flags &= ~SV_FLAGS_QUOTED_FIELDS;
       if(va_arg(arg, long))
         t->flags |= SV_FLAGS_QUOTED_FIELDS;
+      break;
+
+    case SV_OPTION_STRIP_WHITESPACE:
+      t->flags &= ~SV_FLAGS_STRIP_WHITESPACE;
+      if(va_arg(arg, long))
+        t->flags |= SV_FLAGS_STRIP_WHITESPACE;
       break;
 
     default:
