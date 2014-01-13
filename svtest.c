@@ -73,13 +73,44 @@ typedef struct
 } myc;
 
 
-#define N_TESTS 3
-static const char* const expected_1[4] = {"a", "b", "1", "2" };
+#define N_TESTS 15
+static const char* const expected_0[4] = {"a", "b", "1", "2" };
+static const char* const expected_1[4] = {"c", "d", "3", "4" };
+static const char* const expected_2[4] = {"e", "f", "5", "6" };
+
+/* test.csv */
+static const char* const expected_3[6] = {"a", "b", "c", "cat", "sat", "mat" };
+static const char* const expected_4[6] = {"a", "b", "c", "", "sat", "mat" };
+static const char* const expected_5[6] = {"a", "b", "c", "this is", "a", "test" };
+static const char* const expected_6[6] = {"a", "b", "c", "this", "is a", "test" };
+static const char* const expected_7[6] = {"a", "b", "c", "this", "is", "a test" };
+static const char* const expected_8[6] = {"a", "b", "c", "this,is", "a", "test" };
+static const char* const expected_9[6] = {"a", "b", "c", "this", "is,a", "test" };
+static const char* const expected_10[6] = {"a", "b", "c", "this", "is", "a,test" };
+static const char* const expected_11[6] = {"a", "b", "c", "\"", "\"", "\"" };
+static const char* const expected_12[6] = {"a", "b", "c", "\"\"", "\"\"", "\"\"" };
+static const char* const expected_13[6] = {"a", "b", "c", "\"\"\"", "\"\"\"", "\"\"\"" };
+static const char* const expected_14[6] = {"a", "b", "c", "quoting", "can \"\"be\"\"", "fun" };
 
 static const my_test_data test_data[N_TESTS + 1] = {
-  { ',',  0, "a,b\n1,2\n",   (const char** const)expected_1, 2, 1 },
-  { '\t', 0, "a\tb\n1\t2\n", (const char** const)expected_1, 2, 1 },
-  { ',', SV_OPTION_STRIP_WHITESPACE, "  a\t , \tb  \n  1\t , \t 2\n", (const char** const)expected_1, 2, 1 },
+  { ',',  0, "a,b\n1,2\n",   (const char** const)expected_0, 2, 1 },
+  { '\t', 0, "c\td\n3\t4\n", (const char** const)expected_1, 2, 1 },
+  { ',', SV_OPTION_STRIP_WHITESPACE, "  e\t , \tf  \n  5\t , \t 6\n", (const char** const)expected_2, 2, 1 },
+
+  /* test.csv */
+  { ',',  0, "a,b,c\ncat,sat,mat\n", (const char** const)expected_3, 3, 1 },
+  { ',',  0, "a,b,c\n,sat,mat\n", (const char** const)expected_4, 3, 1 },
+  { ',',  0, "a,b,c\n\"this is\",a,test\n", (const char** const)expected_5, 3, 1 },
+  { ',',  0, "a,b,c\nthis,\"is a\",test\n", (const char** const)expected_6, 3, 1 },
+  { ',',  0, "a,b,c\nthis,is,\"a test\"\n", (const char** const)expected_7, 3, 1 },
+  { ',',  0, "a,b,c\n\"this,is\",a,test\ns,#\nect\n", (const char** const)expected_8, 3, 1 },
+  { ',',  0, "a,b,c\nthis,\"is,a\",test\ns,#\nect\n", (const char** const)expected_9, 3, 1 },
+  { ',',  0, "a,b,c\nthis,is,\"a,test\"\ns,#\nect\n", (const char** const)expected_10, 3, 1 },
+  { ',',  0, "a,b,c\n\"\"\"\",\"\"\"\",\"\"\"\"\n", (const char** const)expected_11, 3, 1 },
+  { ',',  0, "a,b,c\n\"\"\"\"\",\"\"\"\"\",\"\"\"\"\"\n", (const char** const)expected_12, 3, 1 },
+  { ',',  0, "a,b,c\n\"\"\"\"\"\"\"\",\"\"\"\"\"\"\"\",\"\"\"\"\"\"\"\"\n", (const char** const)expected_13, 3, 1 },
+  { ',',  0, "a,b,c\nquoting,\"can \"\"be\"\"\",fun\n\"\n", (const char** const)expected_14, 3, 1 },
+
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
 
