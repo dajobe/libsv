@@ -10,4 +10,5 @@ Makefile.in
 TAGS
 example
 libsv.la
+sv2c
 svtest

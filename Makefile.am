@@ -31,7 +31,7 @@ test1.tsv
 
 TESTS=svtest$(EXEEXT)
 
-EXTRA_PROGRAMS=$(TESTS)
+EXTRA_PROGRAMS=$(TESTS) sv2c$(EXEEXT)
 
 CLEANFILES=$(TESTS) \
 example$(EXEEXT) \
@@ -39,6 +39,9 @@ example$(EXEEXT) \
 
 svtest_SOURCES = svtest.c
 svtest_LDADD = $(builddir)/libsv.la
+
+sv2c_SOURCES = sv2c.c
+sv2c_LDADD = $(builddir)/libsv.la
 
 
 
