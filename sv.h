@@ -30,6 +30,7 @@ typedef enum {
 
 typedef struct sv_s sv;
 typedef sv_status_t (*sv_fields_callback)(sv *t, void *user_data, char** fields, size_t *widths, size_t count);
+typedef sv_status_t (*sv_line_callback)(sv *t, void *user_data, const char* line, size_t length);
 
 typedef enum {
   SV_OPTION_NONE = 0,
@@ -37,7 +38,8 @@ typedef enum {
   SV_OPTION_BAD_DATA_ERROR,
   SV_OPTION_QUOTED_FIELDS,
   SV_OPTION_STRIP_WHITESPACE,
-  SV_OPTION_QUOTE_CHAR
+  SV_OPTION_QUOTE_CHAR,
+  SV_OPTION_LINE_CALLBACK
 } sv_option_t;
 
 sv* sv_init(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep);

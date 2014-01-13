@@ -88,6 +88,9 @@ struct sv_s {
   char last_char;
 
   char quote_char;
+
+  /* called with the line (before parsing) */
+  sv_line_callback line_callback;
 };
 
 
@@ -337,6 +340,12 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
     sv_dump_buffer(stderr, "(sv_parse_line): Parsing line", line, len);
 #endif
   
+  if(t->line_callback) {
+    status = t->line_callback(t, t->callback_user_data, (const char*)line, len);
+    if(status != SV_STATUS_OK)
+      return status;
+  }
+
   status = sv_ensure_fields_buffer_size(t, len);
   if(status)
     return status;
@@ -655,6 +664,12 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
           t->quote_char = c;
       }
       break;
+
+    case SV_OPTION_LINE_CALLBACK:
+      if(1) {
+        sv_line_callback cb = va_arg(arg, void*);
+        t->line_callback = cb;
+      }
 
     default:
     case SV_OPTION_NONE:
