@@ -59,9 +59,15 @@ typedef struct
 typedef struct 
 {
   int test_index;
+  /* raw line */
+  char* line;
+  size_t line_len;
+  /* processed counts */
   int columns_count;
   int rows_count;
+  /* expected results */
   const my_test_data *expected;
+  /* errors seen */
   int header_errors;
   int data_errors;
 } myc;
@@ -83,6 +89,23 @@ static const my_test_data test_data[N_TESTS + 1] = {
 
 
 static sv_status_t
+my_sv_line_callback(sv *t, void *user_data, const char* line, size_t length)
+{
+  myc *c = (myc*)user_data;
+
+  if(c->line)
+    free(c->line);
+  c->line = (char*)malloc(length + 1);
+  if(c->line)
+    memcpy(c->line, line, length + 1);
+
+  /* This code always succeeds */
+  return SV_STATUS_OK;
+}
+
+
+
+static sv_status_t
 my_sv_header_callback(sv *t, void *user_data,
                       char** fields, size_t *widths, size_t count)
 {
@@ -97,8 +120,9 @@ my_sv_header_callback(sv *t, void *user_data,
     const char* expected_header = c->expected->expected[ix];
 
     if(strcmp(header, expected_header)) {
-      fprintf(stderr, "%s: Test %d FAIL - got header '%s' expected '%s'\n", 
-              program, c->test_index, header, expected_header);
+      fprintf(stderr,
+              "%s: Test %d FAIL '%s' - got header '%s' expected '%s'\n",
+              program, c->test_index, c->line, header, expected_header);
       c->header_errors++;
     }
   }
@@ -121,8 +145,9 @@ my_sv_fields_callback(sv *t, void *user_data,
 
     if(strcmp(data, expected_data)) {
       fprintf(stderr,
-              "%s: Test %d FAIL row %d - got data '%s' expected '%s'\n", 
-              program, c->test_index, c->rows_count, data, expected_data);
+              "%s: Test %d FAIL '%s' row %d - got data '%s' expected '%s'\n",
+              program, c->test_index, c->line, c->rows_count,
+              data, expected_data);
       c->data_errors++;
     }
   }
@@ -168,6 +193,7 @@ main(int argc, char *argv[])
     c.columns_count = 0;
     c.rows_count = 0;
     c.expected = test;
+    c.line = NULL;
 
     data_len = strlen(test->data);
 
@@ -178,6 +204,8 @@ main(int argc, char *argv[])
       goto tidy;
     }
 
+    sv_set_option(t, SV_OPTION_LINE_CALLBACK, my_sv_line_callback);
+
     if(test->option != 0)
       sv_set_option(t, (sv_option_t)test->option, 1L);
 
@@ -187,21 +215,24 @@ main(int argc, char *argv[])
               program, test_index, (int)status);
       errors++;
     } else if(c.header_errors) {
-      fprintf(stderr, "%s: Test %d FAIL - header errors\n",
-              program, test_index);
+      fprintf(stderr, "%s: Test %d FAIL '%s' - header errors\n",
+              program, test_index, test->data);
       errors++;
     } else if(c.data_errors) {
-      fprintf(stderr, "%s: Test %d FAIL - data errors\n",
-              program, test_index);
+      fprintf(stderr, "%s: Test %d FAIL '%s' - data errors\n",
+              program, test_index, test->data);
       errors++;
     } else if(test->rows_count != c.rows_count) {
-      fprintf(stderr, "%s: Test %d FAIL - saw %d records - expected %d\n",
-              program, test_index, c.rows_count, test->rows_count); 
+      fprintf(stderr, "%s: Test %d FAIL '%s' - saw %d records - expected %d\n",
+              program, test_index, test->data, c.rows_count, test->rows_count); 
      errors++;
     } else {
       fprintf(stderr, "%s: Test %d OK\n",
               program, test_index);
     }
+
+    if(c.line)
+      free(c.line);
 
     sv_free(t);
   }
