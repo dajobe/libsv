@@ -563,7 +563,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
         status = SV_STATUS_LINE_FIELDS;
         goto tidy;
       }
-#if defined(SV_DEBUG)
+#if defined(SV_DEBUG) && SV_DEBUG > 1
       fprintf(stderr, "Ignoring line %d: saw %d fields expected %d\n",
                 t->line, fields_count, t->fields_count);
 #endif
