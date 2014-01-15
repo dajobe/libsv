@@ -1,6 +1,15 @@
-SRCS=example.c sv.c sv.h
-EXE=example
+SVLIBSRCS=sv.c sv.h
+SVLIBOBJS=sv.o
+
+EXSRCS=example.c sv2c.c
+EXAMPLES=$(EXSRCS:.c=.o)
+
+SRCS=$(EXSRCS) $(SVLIBSRCS)
+EXES=$(EXAMPLES)
 TESTS=svtest
+
+CLEANFILES=$(EXES) $(TESTS)
+
 TEST_FILES=test1.csv \
 zero.tsv \
 one.tsv \
@@ -19,8 +28,19 @@ TARBALL=$(PV).tar.gz
 LDFLAGS=-g
 CPPFLAGS=-g -I. -DHAVE_STDLIB_H -DHAVE_UNISTD_H -DHAVE_ERRNO_H
 
-$(EXE): sv.o example.o
+all: $(EXES)
+
+# Library deps
 sv.c: sv.h
+
+# Object deps
+example: example.o $(SVLIBOBJS)
+svtest: svtest.o $(SVLIBOBJS)
+sv2c: sv2c.o $(SVLIBOBJS)
+
+# Source Deps
+sv2c.c: sv.h
+svtest.c: sv.h
 example.c: sv.h
 
 dist: $(FILES)
@@ -31,7 +51,7 @@ dist: $(FILES)
 	rm -rf $(PV)
 
 clean:
-	rm -f *.o *~ *.tar.gz $(EXE)
+	rm -f *.o *~ *.tar.gz $(CLEANFILES)
 
 check: $(TESTS)
 	@rc=0; \
@@ -44,5 +64,3 @@ check: $(TESTS)
 	  fi; \
 	done; \
 	exit $$rc
-
-svtest: svtest.o sv.o
