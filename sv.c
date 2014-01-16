@@ -486,9 +486,10 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 
 
 static sv_status_t
-sv_parse_chunk_line(sv* t, size_t line_len, unsigned int* fields_count_p)
+sv_parse_chunk_line(sv* t, size_t line_len)
 {
   sv_status_t status = SV_STATUS_OK;
+  unsigned int fields_count = 0;
 
   if(!line_len)
     goto skip_line;
@@ -515,11 +516,11 @@ sv_parse_chunk_line(sv* t, size_t line_len, unsigned int* fields_count_p)
       return status;
   }
 
-  status = sv_parse_line(t, t->buffer, line_len, fields_count_p);
+  status = sv_parse_line(t, t->buffer, line_len, &fields_count);
   if(status)
     return status;
 
-  if(*fields_count_p != t->fields_count) {
+  if(fields_count != t->fields_count) {
     t->bad_records++;
     if(t->flags & SV_FLAGS_BAD_DATA_ERROR) {
 #if defined(SV_DEBUG) && SV_DEBUG > 1
@@ -600,7 +601,6 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
   /* look for an end of line to do some work */
   for(offset = 0; offset < t->len; offset++) {
     size_t line_len = 0;
-    unsigned int fields_count = 0;
     char c = t->buffer[offset];
 
     /* skip \n when just seen \r - i.e. \r\n or CR LF */
@@ -629,10 +629,9 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 #endif
 
     /* found a line */
-    fields_count = 0;
     line_len = offset;
 
-    status = sv_parse_chunk_line(t, line_len, &fields_count);
+    status = sv_parse_chunk_line(t, line_len);
     if(status != SV_STATUS_OK)
       break;
 
