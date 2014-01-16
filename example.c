@@ -46,10 +46,30 @@ typedef struct
 {
   const char* filename;
   int count;
+  char* line;
 } myc;
 
 
 const char* program;
+
+
+static sv_status_t
+my_sv_line_callback(sv *t, void *user_data, const char* line, size_t length)
+{
+  myc *c = (myc*)user_data;
+
+  if(c->line)
+    free(c->line);
+  c->line = (char*)malloc(length + 1);
+  if(c->line)
+    memcpy(c->line, line, length + 1);
+
+  fprintf(stdout, "%s:%d: Line >>>%s<<<\n", c->filename, sv_get_line(t), line);
+
+  /* This code always succeeds */
+  return SV_STATUS_OK;
+}
+
 
 
 static sv_status_t
@@ -129,6 +149,7 @@ main(int argc, char *argv[])
   memset(&c, sizeof(c), '\0');
   c.filename = data_file;
   c.count = 0;
+  c.line = NULL;
 
   data_file_len = strlen(data_file);
 
@@ -146,6 +167,8 @@ main(int argc, char *argv[])
     rc = 1;
     goto tidy;
   }
+
+  sv_set_option(t, SV_OPTION_LINE_CALLBACK, my_sv_line_callback);
   
   while(!feof(fh)) {
     char buffer[1024];
@@ -160,6 +183,9 @@ main(int argc, char *argv[])
   fprintf(stderr, "%s: Saw %d records\n", program, c.count);
   
  tidy:
+  if(c.line)
+    free(c.line);
+
   if(t)
     sv_free(t);
 
