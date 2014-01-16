@@ -52,25 +52,26 @@ typedef struct
   const char** const expected;
   int columns_count;
   int rows_count;
-} my_test_data;
+} svtest_data_set;
 
 
 /* structure used for user data callback */
 typedef struct 
 {
   int test_index;
+  /* expected results */
+  const svtest_data_set *expected;
+
   /* raw line */
   char* line;
   size_t line_len;
   /* processed counts */
   int columns_count;
   int rows_count;
-  /* expected results */
-  const my_test_data *expected;
   /* errors seen */
   int header_errors;
   int data_errors;
-} myc;
+} svtest_context;
 
 
 #define N_TESTS 15
@@ -92,7 +93,7 @@ static const char* const expected_12[6] = {"a", "b", "c", "\"\"", "\"\"", "\"\""
 static const char* const expected_13[6] = {"a", "b", "c", "\"\"\"", "\"\"\"", "\"\"\"" };
 static const char* const expected_14[6] = {"a", "b", "c", "quoting", "can \"\"be\"\"", "fun" };
 
-static const my_test_data test_data[N_TESTS + 1] = {
+static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',',  0, "a,b\n1,2\n",   (const char** const)expected_0, 2, 1 },
   { '\t', 0, "c\td\n3\t4\n", (const char** const)expected_1, 2, 1 },
   { ',', SV_OPTION_STRIP_WHITESPACE, "  e\t , \tf  \n  5\t , \t 6\n", (const char** const)expected_2, 2, 1 },
@@ -120,9 +121,9 @@ static const my_test_data test_data[N_TESTS + 1] = {
 
 
 static sv_status_t
-my_sv_line_callback(sv *t, void *user_data, const char* line, size_t length)
+svtest_line_callback(sv *t, void *user_data, const char* line, size_t length)
 {
-  myc *c = (myc*)user_data;
+  svtest_context *c = (svtest_context*)user_data;
 
   if(c->line)
     free(c->line);
@@ -137,11 +138,11 @@ my_sv_line_callback(sv *t, void *user_data, const char* line, size_t length)
 
 
 static sv_status_t
-my_sv_header_callback(sv *t, void *user_data,
-                      char** fields, size_t *widths, size_t count)
+svtest_header_callback(sv *t, void *user_data,
+                       char** fields, size_t *widths, size_t count)
 {
   unsigned int column_i;
-  myc *c = (myc*)user_data;
+  svtest_context *c = (svtest_context*)user_data;
 
   c->columns_count = count;
 
@@ -163,11 +164,11 @@ my_sv_header_callback(sv *t, void *user_data,
 
 
 static sv_status_t
-my_sv_fields_callback(sv *t, void *user_data,
-                      char** fields, size_t *widths, size_t count)
+svtest_fields_callback(sv *t, void *user_data,
+                       char** fields, size_t *widths, size_t count)
 {
   unsigned int column_i;
-  myc *c = (myc*)user_data;
+  svtest_context *c = (svtest_context*)user_data;
 
   for(column_i = 0; column_i < count; column_i++) {
     const char* data = fields[column_i];
@@ -213,10 +214,10 @@ main(int argc, char *argv[])
 
 
   for(test_index = 0; test_index < N_TESTS; test_index++) {
-    myc c;
+    svtest_context c;
     size_t data_len;
     sv *t = NULL;
-    const my_test_data *test = &test_data[test_index];
+    const svtest_data_set *test = &svtest_data[test_index];
     sv_status_t status;
 
     memset(&c, '\0', sizeof(c));
@@ -228,14 +229,14 @@ main(int argc, char *argv[])
 
     data_len = strlen(test->data);
 
-    t = sv_init(&c, my_sv_header_callback, my_sv_fields_callback, test->sep);
+    t = sv_init(&c, svtest_header_callback, svtest_fields_callback, test->sep);
     if(!t) {
       fprintf(stderr, "%s: Failed to init SV library", program);
       rc = 1;
       goto tidy;
     }
 
-    sv_set_option(t, SV_OPTION_LINE_CALLBACK, my_sv_line_callback);
+    sv_set_option(t, SV_OPTION_LINE_CALLBACK, svtest_line_callback);
 
     if(test->option != 0)
       sv_set_option(t, (sv_option_t)test->option, 1L);
