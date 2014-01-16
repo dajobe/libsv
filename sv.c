@@ -486,8 +486,9 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 
 
 static sv_status_t
-sv_parse_chunk_line(sv* t, size_t line_len)
+sv_parse_chunk_line(sv* t, size_t line_len, int has_nl)
 {
+  size_t move_len = line_len;
   sv_status_t status = SV_STATUS_OK;
   unsigned int fields_count = 0;
 
@@ -566,11 +567,14 @@ sv_parse_chunk_line(sv* t, size_t line_len)
 
   skip_line:
 
+  if(has_nl)
+    move_len++;
+
   /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
-  t->len -= line_len + 1;
+  t->len -= move_len;
 
   /* this is an overlapping move */
-  memmove(t->buffer, &t->buffer[line_len + 1], t->len);
+  memmove(t->buffer, &t->buffer[move_len], t->len);
 
   /* This is not needed: guaranteed above */
   /* t->buffer[t->len] = '\0' */
@@ -633,7 +637,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 #endif
 
     /* found a line */
-    status = sv_parse_chunk_line(t, offset);
+    status = sv_parse_chunk_line(t, offset, 1);
     if(status != SV_STATUS_OK)
       break;
 
@@ -645,7 +649,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
      * parse it all as the last line.  It will NOT contain newlines.
      */
     if(t->len)
-      status = sv_parse_chunk_line(t, t->len);
+      status = sv_parse_chunk_line(t, t->len, 0);
   }
 
   return status;
