@@ -584,23 +584,27 @@ sv_parse_chunk_line(sv* t, size_t line_len)
 sv_status_t
 sv_parse_chunk(sv *t, char *buffer, size_t len)
 {
-  unsigned int offset = 0;
+  size_t offset = 0;
   sv_status_t status = SV_STATUS_OK;
-  
-  status = sv_ensure_line_buffer_size(t, len);
-  if(status)
-    return status;
-  
-  /* add new buffer */
-  memcpy(t->buffer + t->len, buffer, len);
+  /* End of input if either of these is NULL */
+  int is_end = (!buffer || !len);
 
-  /* always ensure it is NUL terminated even if input chunk was not */
-  t->len += len;
-  t->buffer[t->len] = '\0';
+  if(!is_end) {
+    /* add new data to existing buffer */
+    status = sv_ensure_line_buffer_size(t, len);
+    if(status)
+      return status;
+
+    /* add new buffer */
+    memcpy(t->buffer + t->len, buffer, len);
+
+    /* always ensure it is NUL terminated even if input chunk was not */
+    t->len += len;
+    t->buffer[t->len] = '\0';
+  }
 
   /* look for an end of line to do some work */
   for(offset = 0; offset < t->len; offset++) {
-    size_t line_len = 0;
     char c = t->buffer[offset];
 
     /* skip \n when just seen \r - i.e. \r\n or CR LF */
@@ -629,13 +633,18 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 #endif
 
     /* found a line */
-    line_len = offset;
-
-    status = sv_parse_chunk_line(t, line_len);
+    status = sv_parse_chunk_line(t, offset);
     if(status != SV_STATUS_OK)
       break;
 
     offset = -1; /* so for loop starts at 0 */
+  }
+
+  if(is_end && status == SV_STATUS_OK) {
+    /* If end of input, try to parse entire buffer as a line (it will
+     * contain no newlines)
+     */
+    status = sv_parse_chunk_line(t, t->len);
   }
 
   return status;
