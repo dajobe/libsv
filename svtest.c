@@ -74,7 +74,7 @@ typedef struct
 } svtest_context;
 
 
-#define N_TESTS 15
+#define N_TESTS 20
 static const char* const expected_0[4] = {"a", "b", "1", "2" };
 static const char* const expected_1[4] = {"c", "d", "3", "4" };
 static const char* const expected_2[4] = {"e", "f", "5", "6" };
@@ -94,9 +94,14 @@ static const char* const expected_13[6] = {"a", "b", "c", "\"\"\"", "\"\"\"", "\
 static const char* const expected_14[6] = {"a", "b", "c", "quoting", "can \"\"be\"\"", "fun" };
 
 static const svtest_data_set svtest_data[N_TESTS + 1] = {
+  { ',',  0, "a,b\n",        (const char** const)expected_0, 2, 0 },
+  { '\t', 0, "a\tb",         (const char** const)expected_0, 2, 0 },
   { ',',  0, "a,b\n1,2\n",   (const char** const)expected_0, 2, 1 },
+  { '\t', 0, "a\tb\n1\t2",   (const char** const)expected_0, 2, 1 },
   { '\t', 0, "c\td\n3\t4\n", (const char** const)expected_1, 2, 1 },
   { ',', SV_OPTION_STRIP_WHITESPACE, "  e\t , \tf  \n  5\t , \t 6\n", (const char** const)expected_2, 2, 1 },
+  { '\t', 0, "c\td\n\n\n3\t4\n\n\n", (const char** const)expected_1, 2, 1 },
+  { ',',  0, "c,d\n3,4",         (const char** const)expected_1, 2, 1 },
 
   /* test.csv */
   { ',',  0, "a,b,c\ncat,sat,mat\n", (const char** const)expected_3, 3, 1 },
