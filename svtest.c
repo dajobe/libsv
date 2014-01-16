@@ -246,7 +246,17 @@ main(int argc, char *argv[])
       fprintf(stderr, "%s: Test %d FAIL - sv_parse_chunk() returned %d\n",
               program, test_index, (int)status);
       errors++;
-    } else if(c.header_errors) {
+      goto end_test;
+    }
+    status = sv_parse_chunk(t, NULL, 0);
+    if(status != SV_STATUS_OK) {
+      fprintf(stderr, "%s: Test %d FAIL - final sv_parse_chunk() returned %d\n",
+              program, test_index, (int)status);
+      errors++;
+      goto end_test;
+    }
+
+    if(c.header_errors) {
       fprintf(stderr, "%s: Test %d FAIL '%s' - header errors\n",
               program, test_index, test->data);
       errors++;
@@ -263,6 +273,7 @@ main(int argc, char *argv[])
               program, test_index);
     }
 
+    end_test:
     if(c.line)
       free(c.line);
 
