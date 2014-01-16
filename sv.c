@@ -485,6 +485,101 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 }
 
 
+static sv_status_t
+sv_parse_chunk_line(sv* t, size_t line_len, unsigned int* fields_count_p)
+{
+  sv_status_t status = SV_STATUS_OK;
+
+  if(!line_len)
+    goto skip_line;
+
+  if(t->line_callback) {
+    char c = t->buffer[line_len];
+      
+    t->buffer[line_len] = '\0';
+    status = t->line_callback(t, t->callback_user_data, t->buffer, line_len);
+    t->buffer[line_len] = c;
+    if(status != SV_STATUS_OK)
+      return status;
+  }
+
+  if(!t->fields_count) {
+    /* First line in the file - calculate number of fields */
+    status = sv_parse_line(t, t->buffer, line_len, &t->fields_count);
+    if(status)
+      return status;
+
+    /* initialise arrays of size t->fields_count */
+    status = sv_init_fields(t);
+    if(status)
+      return status;
+  }
+
+  status = sv_parse_line(t, t->buffer, line_len, fields_count_p);
+  if(status)
+    return status;
+
+  if(*fields_count_p != t->fields_count) {
+    t->bad_records++;
+    if(t->flags & SV_FLAGS_BAD_DATA_ERROR) {
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+      fprintf(stderr, "Error in line %d: saw %d fields expected %d\n",
+              t->line, fields_count, t->fields_count);
+#endif
+      status = SV_STATUS_LINE_FIELDS;
+      return status;
+    }
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+    fprintf(stderr, "Ignoring line %d: saw %d fields expected %d\n",
+            t->line, fields_count, t->fields_count);
+#endif
+    /* Otherwise skip the line */
+    goto skip_line;
+  }
+
+  if(t->line == 1 && (t->flags & SV_FLAGS_SAVE_HEADER)) {
+    /* first line and header: turn fields into headers */
+    unsigned int i;
+      
+    for(i = 0; i < t->fields_count; i++) {
+      char *s = (char*)malloc(t->fields_widths[i]+1);
+      memcpy(s, t->fields[i], t->fields_widths[i]+1);
+      t->headers[i] = s;
+      t->headers_widths[i] = t->fields_widths[i];
+    }
+
+    if(t->header_callback) {
+      /* got header fields - return them to user */
+      status = t->header_callback(t, t->callback_user_data, t->headers, 
+                                  t->headers_widths, t->fields_count);
+    }
+  } else {
+    /* data */
+
+    if(t->data_callback) {
+      /* got data fields - return them to user */
+      status = t->data_callback(t, t->callback_user_data, t->fields, 
+                                t->fields_widths, t->fields_count);
+    }
+  }
+
+  skip_line:
+  
+  /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
+  t->len -= line_len+1;
+
+  /* this is an overlapping move */
+  memmove(t->buffer, &t->buffer[line_len+1], t->len);
+
+  /* This is not needed: guaranteed above */
+  /* t->buffer[t->len] = '\0' */
+
+  t->line++;
+
+  return status;
+}
+
+
 sv_status_t
 sv_parse_chunk(sv *t, char *buffer, size_t len)
 {
@@ -537,95 +632,12 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
     fields_count = 0;
     line_len = offset;
 
-    if(!line_len)
-      goto skip_line;
+    status = sv_parse_chunk_line(t, line_len, &fields_count);
+    if(status != SV_STATUS_OK)
+      break;
 
-    if(t->line_callback) {
-      char c = t->buffer[line_len];
-      
-      t->buffer[line_len] = '\0';
-      status = t->line_callback(t, t->callback_user_data, t->buffer, line_len);
-      t->buffer[line_len] = c;
-      if(status != SV_STATUS_OK)
-        return status;
-    }
-
-    if(!t->fields_count) {
-      /* First line in the file - calculate number of fields */
-      status = sv_parse_line(t, t->buffer, line_len, &t->fields_count);
-      if(status)
-        goto tidy;
-
-      /* initialise arrays of size t->fields_count */
-      status = sv_init_fields(t);
-      if(status)
-        goto tidy;
-    }
-    
-    status = sv_parse_line(t, t->buffer, line_len, &fields_count);
-    if(status)
-      goto tidy;
-    
-    if(fields_count != t->fields_count) {
-      t->bad_records++;
-      if(t->flags & SV_FLAGS_BAD_DATA_ERROR) {
-#if defined(SV_DEBUG) && SV_DEBUG > 1
-        fprintf(stderr, "Error in line %d: saw %d fields expected %d\n",
-                t->line, fields_count, t->fields_count);
-#endif
-        status = SV_STATUS_LINE_FIELDS;
-        goto tidy;
-      }
-#if defined(SV_DEBUG) && SV_DEBUG > 1
-      fprintf(stderr, "Ignoring line %d: saw %d fields expected %d\n",
-                t->line, fields_count, t->fields_count);
-#endif
-      /* Otherwise skip the line */
-      goto skip_line;
-    }
-
-    if(t->line == 1 && (t->flags & SV_FLAGS_SAVE_HEADER)) {
-      /* first line and header: turn fields into headers */
-      unsigned int i;
-      
-      for(i = 0; i < t->fields_count; i++) {
-        char *s = (char*)malloc(t->fields_widths[i]+1);
-        memcpy(s, t->fields[i], t->fields_widths[i]+1);
-        t->headers[i] = s;
-        t->headers_widths[i] = t->fields_widths[i];
-      }
-
-      if(t->header_callback) {
-        /* got header fields - return them to user */
-        status = t->header_callback(t, t->callback_user_data, t->headers, 
-                                    t->headers_widths, t->fields_count);
-      }
-    } else {
-      /* data */
-
-      if(t->data_callback) {
-        /* got data fields - return them to user */
-        status = t->data_callback(t, t->callback_user_data, t->fields, 
-                                  t->fields_widths, t->fields_count);
-      }
-    }
-
-    skip_line:
-    
-    /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
-    t->len -= line_len+1;
-
-    /* this is an overlapping move */
-    memmove(t->buffer, &t->buffer[line_len+1], t->len);
-
-    /* This is not needed: guaranteed above */
-    /* t->buffer[t->len] = '\0' */
-
-    t->line++;
     offset = -1; /* so for loop starts at 0 */
   }
-  
-tidy:
 
   return status;
 }
