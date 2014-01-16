@@ -340,12 +340,6 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
     sv_dump_buffer(stderr, "(sv_parse_line): Parsing line", line, len);
 #endif
   
-  if(t->line_callback) {
-    status = t->line_callback(t, t->callback_user_data, (const char*)line, len);
-    if(status != SV_STATUS_OK)
-      return status;
-  }
-
   status = sv_ensure_fields_buffer_size(t, len);
   if(status)
     return status;
@@ -545,6 +539,16 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
 
     if(!line_len)
       goto skip_line;
+
+    if(t->line_callback) {
+      char c = t->buffer[line_len];
+      
+      t->buffer[line_len] = '\0';
+      status = t->line_callback(t, t->callback_user_data, t->buffer, line_len);
+      t->buffer[line_len] = c;
+      if(status != SV_STATUS_OK)
+        return status;
+    }
 
     if(!t->fields_count) {
       /* First line in the file - calculate number of fields */
