@@ -179,6 +179,9 @@ main(int argc, char *argv[])
   }
   fclose(fh);
   fh = NULL;
+
+  /* Record EOF */
+  sv_parse_chunk(t, NULL, 0);
   
   fprintf(stderr, "%s: Saw %d records\n", program, c.count);
   
