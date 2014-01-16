@@ -565,12 +565,12 @@ sv_parse_chunk_line(sv* t, size_t line_len)
   }
 
   skip_line:
-  
+
   /* adjust buffer - remove 'line_len+1' bytes from start of buffer */
-  t->len -= line_len+1;
+  t->len -= line_len + 1;
 
   /* this is an overlapping move */
-  memmove(t->buffer, &t->buffer[line_len+1], t->len);
+  memmove(t->buffer, &t->buffer[line_len + 1], t->len);
 
   /* This is not needed: guaranteed above */
   /* t->buffer[t->len] = '\0' */
@@ -641,10 +641,11 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
   }
 
   if(is_end && status == SV_STATUS_OK) {
-    /* If end of input, try to parse entire buffer as a line (it will
-     * contain no newlines)
+    /* If end of input and there is a non-empty buffer left, try to
+     * parse it all as the last line.  It will NOT contain newlines.
      */
-    status = sv_parse_chunk_line(t, t->len);
+    if(t->len)
+      status = sv_parse_chunk_line(t, t->len);
   }
 
   return status;
