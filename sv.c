@@ -696,7 +696,7 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
 
     case SV_OPTION_LINE_CALLBACK:
       if(1) {
-        sv_line_callback cb = va_arg(arg, void*);
+        sv_line_callback cb = (sv_line_callback)va_arg(arg, void*);
         t->line_callback = cb;
       }
 
