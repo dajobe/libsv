@@ -29,9 +29,11 @@ one.tsv \
 test1.tsv
 
 
-TESTS=svtest$(EXEEXT)
+TESTS=$(check_PROGRAMS)
 
-EXTRA_PROGRAMS=$(TESTS) sv2c$(EXEEXT)
+check_PROGRAMS=svtest$(EXEEXT)
+
+EXTRA_PROGRAMS=sv2c$(EXEEXT)
 
 CLEANFILES=$(EXTRA_PROGRAMS) \
 example$(EXEEXT) \
@@ -62,3 +64,13 @@ analyze: $(SOURCES)
 	done; \
 	set -e; exit $$result
 endif
+
+if MAINTAINER_MODE
+
+$(srcdir)/README: $(srcdir)/README.md
+	cp $< $@
+
+endif
+
+# Some people need a little help ;-)
+test: check
