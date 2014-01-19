@@ -196,12 +196,87 @@ svtest_fields_callback(sv *t, void *user_data,
 }
 
 
+static int
+svtest_run_test(unsigned int test_index)
+{
+  svtest_context c;
+  size_t data_len;
+  sv *t = NULL;
+  const svtest_data_set *test = &svtest_data[test_index];
+  sv_status_t status;
+  int rc = 0;
+  
+  memset(&c, '\0', sizeof(c));
+  c.test_index = test_index;
+  c.columns_count = 0;
+  c.rows_count = 0;
+  c.expected = test;
+  c.line = NULL;
+  
+  data_len = strlen(test->data);
+
+  t = sv_init(&c, svtest_header_callback, svtest_fields_callback, test->sep);
+  if(!t) {
+    fprintf(stderr, "%s: Failed to init SV library", program);
+    rc = 1;
+    return rc;
+  }
+
+  sv_set_option(t, SV_OPTION_LINE_CALLBACK, svtest_line_callback);
+
+  if(test->option != 0)
+    sv_set_option(t, (sv_option_t)test->option, 1L);
+  
+  status = sv_parse_chunk(t, (char*)test->data, data_len);
+  if(status != SV_STATUS_OK) {
+    fprintf(stderr, "%s: Test %d FAIL - sv_parse_chunk() returned %d\n",
+            program, test_index, (int)status);
+    rc = 1;
+    goto end_test;
+  }
+
+  status = sv_parse_chunk(t, NULL, 0);
+  if(status != SV_STATUS_OK) {
+      fprintf(stderr, "%s: Test %d FAIL - final sv_parse_chunk() returned %d\n",
+              program, test_index, (int)status);
+      rc = 1;
+      goto end_test;
+  }
+  
+  if(c.header_errors) {
+    fprintf(stderr, "%s: Test %d FAIL '%s' - header errors\n",
+            program, test_index, test->data);
+    rc = 1;
+  } else if(c.data_errors) {
+    fprintf(stderr, "%s: Test %d FAIL '%s' - data errors\n",
+            program, test_index, test->data);
+    rc = 1;
+  } else if(test->rows_count != c.rows_count) {
+    fprintf(stderr, "%s: Test %d FAIL '%s' - saw %d records - expected %d\n",
+            program, test_index, test->data, c.rows_count, test->rows_count); 
+    rc = 1;
+  } else {
+    fprintf(stderr, "%s: Test %d OK\n",
+            program, test_index);
+  }
+  
+  end_test:
+  if(c.line)
+    free(c.line);
+  
+  sv_free(t);
+
+  return rc;
+}
+
+
+#define MAX_TEST_INDEX (N_TESTS-1)
+
 int
 main(int argc, char *argv[])
 {
   char *p;
   int rc = 0;
-  int errors = 0;
   unsigned int test_index;
 
   program = argv[0];
@@ -211,82 +286,39 @@ main(int argc, char *argv[])
     program = p + 1;
   argv[0] = program;
   
-  if(argc != 1) {
-    fprintf(stderr, "USAGE: %s\n", program);
+  if(argc < 1 || argc > 2) {
+    fprintf(stderr, "USAGE: %s [TEST-INDEX 1..%d]\n", program, MAX_TEST_INDEX);
     rc = 1;
     goto tidy;
   }
 
-
-  for(test_index = 0; test_index < N_TESTS; test_index++) {
-    svtest_context c;
-    size_t data_len;
-    sv *t = NULL;
-    const svtest_data_set *test = &svtest_data[test_index];
-    sv_status_t status;
-
-    memset(&c, '\0', sizeof(c));
-    c.test_index = test_index;
-    c.columns_count = 0;
-    c.rows_count = 0;
-    c.expected = test;
-    c.line = NULL;
-
-    data_len = strlen(test->data);
-
-    t = sv_init(&c, svtest_header_callback, svtest_fields_callback, test->sep);
-    if(!t) {
-      fprintf(stderr, "%s: Failed to init SV library", program);
+  if(argc == 2) {
+    test_index = atoi(argv[1]);
+    if(test_index < 1 || test_index > MAX_TEST_INDEX) {
+      fprintf(stderr, "%s: Test arg '%s' not in range 1..%d\n", program,
+              argv[1], MAX_TEST_INDEX);
       rc = 1;
       goto tidy;
     }
+    rc = svtest_run_test(test_index);
+  } else {
+    /* run all tests */
 
-    sv_set_option(t, SV_OPTION_LINE_CALLBACK, svtest_line_callback);
+    for(test_index = 0; test_index < N_TESTS; test_index++) {
+      int test_rc;
 
-    if(test->option != 0)
-      sv_set_option(t, (sv_option_t)test->option, 1L);
-
-    status = sv_parse_chunk(t, (char*)test->data, data_len);
-    if(status != SV_STATUS_OK) {
-      fprintf(stderr, "%s: Test %d FAIL - sv_parse_chunk() returned %d\n",
-              program, test_index, (int)status);
-      errors++;
-      goto end_test;
+      test_rc = svtest_run_test(test_index);
+      if(test_rc > 0) {
+        /* error */
+        rc++;
+      } else if (test_rc < 0) {
+        /* failure; do not run any more tests */
+        rc = 1;
+        break;
+      }
     }
-    status = sv_parse_chunk(t, NULL, 0);
-    if(status != SV_STATUS_OK) {
-      fprintf(stderr, "%s: Test %d FAIL - final sv_parse_chunk() returned %d\n",
-              program, test_index, (int)status);
-      errors++;
-      goto end_test;
-    }
-
-    if(c.header_errors) {
-      fprintf(stderr, "%s: Test %d FAIL '%s' - header errors\n",
-              program, test_index, test->data);
-      errors++;
-    } else if(c.data_errors) {
-      fprintf(stderr, "%s: Test %d FAIL '%s' - data errors\n",
-              program, test_index, test->data);
-      errors++;
-    } else if(test->rows_count != c.rows_count) {
-      fprintf(stderr, "%s: Test %d FAIL '%s' - saw %d records - expected %d\n",
-              program, test_index, test->data, c.rows_count, test->rows_count); 
-     errors++;
-    } else {
-      fprintf(stderr, "%s: Test %d OK\n",
-              program, test_index);
-    }
-
-    end_test:
-    if(c.line)
-      free(c.line);
-
-    sv_free(t);
   }
-
-  rc = errors;
-
+  
  tidy:
 
   return rc;
