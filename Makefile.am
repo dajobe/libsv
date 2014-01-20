@@ -11,16 +11,12 @@ ANALYZE_COMMAND = $(ANALYZE) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) \
 	$(ANALYZE_FLAGS)
 
-noinst_PROGRAMS = example
 noinst_LTLIBRARIES = libsv.la
 AM_CPPFLAGS = -DSV_CONFIG -I$(top_srcdir)/src
 
 libsv_la_SOURCES = \
 sv.c \
 sv.h
-
-example_SOURCES = example.c
-example_LDADD = libsv.la
 
 EXTRA_DIST = \
 test1.csv \
@@ -33,14 +29,16 @@ TESTS=$(check_PROGRAMS)
 
 check_PROGRAMS=svtest$(EXEEXT)
 
-EXTRA_PROGRAMS=sv2c$(EXEEXT)
+EXTRA_PROGRAMS=example$(EXEEXT) sv2c$(EXEEXT)
 
 CLEANFILES=$(EXTRA_PROGRAMS) \
-example$(EXEEXT) \
 *.plist
 
 svtest_SOURCES = svtest.c
 svtest_LDADD = $(builddir)/libsv.la
+
+example_SOURCES = example.c
+example_LDADD = $(builddir)/libsv.la
 
 sv2c_SOURCES = sv2c.c
 sv2c_LDADD = $(builddir)/libsv.la
