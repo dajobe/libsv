@@ -91,7 +91,7 @@ static const char* const expected_10[6] = {"a", "b", "c", "this", "is", "a,test"
 static const char* const expected_11[6] = {"a", "b", "c", "\"", "\"", "\"" };
 static const char* const expected_12[6] = {"a", "b", "c", "\"\"", "\"\"", "\"\"" };
 static const char* const expected_13[6] = {"a", "b", "c", "\"\"\"", "\"\"\"", "\"\"\"" };
-static const char* const expected_14[6] = {"a", "b", "c", "quoting", "can \"\"be\"\"", "fun" };
+static const char* const expected_14[6] = {"a", "b", "c", "quoting", "can \"be\"", "fun" };
 
 static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',',  0, "a,b\n",        (const char** const)expected_0, 2, 0 },
@@ -113,7 +113,7 @@ static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',',  0, "a,b,c\nthis,\"is,a\",test\n", (const char** const)expected_9, 3, 1 },
   { ',',  0, "a,b,c\nthis,is,\"a,test\"\n", (const char** const)expected_10, 3, 1 },
   { ',',  0, "a,b,c\n\"\"\"\",\"\"\"\",\"\"\"\"\n", (const char** const)expected_11, 3, 1 },
-  { ',',  0, "a,b,c\n\"\"\"\"\",\"\"\"\"\",\"\"\"\"\"\n", (const char** const)expected_12, 3, 1 },
+  { ',',  0, "a,b,c\n\"\"\"\"\"\",\"\"\"\"\"\",\"\"\"\"\"\"\n", (const char** const)expected_12, 3, 1 },
   { ',',  0, "a,b,c\n\"\"\"\"\"\"\"\",\"\"\"\"\"\"\"\",\"\"\"\"\"\"\"\"\n", (const char** const)expected_13, 3, 1 },
   { ',',  0, "a,b,c\nquoting,\"can \"\"be\"\"\",fun\n\"\n", (const char** const)expected_14, 3, 1 },
 
@@ -179,11 +179,14 @@ svtest_fields_callback(sv *t, void *user_data,
     const char* data = fields[column_i];
     unsigned int ix = EXPECTED_DATA_IX(c->rows_count, column_i);
     const char* expected_data = c->expected->expected[ix];
+    unsigned int header_ix = EXPECTED_HEADER_IX(column_i);
+    const char* expected_header = c->expected->expected[header_ix];
 
     if(strcmp(data, expected_data)) {
       fprintf(stderr,
-              "%s: Test %d FAIL '%s' row %d - got data '%s' expected '%s'\n",
+              "%s: Test %d FAIL '%s' row %d got %s value >>>%s<<< expected >>>%s<<<\n",
               program, c->test_index, c->line, c->rows_count,
+              expected_header,
               data, expected_data);
       c->data_errors++;
     }
