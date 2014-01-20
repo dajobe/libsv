@@ -325,7 +325,6 @@ static sv_status_t
 sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 {
   unsigned int column;
-  int quote_count = 0;
   int field_width = 0;
   int field_offset = 0;
   char* current_field = NULL;
@@ -366,12 +365,19 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
 
     if(t->flags & SV_FLAGS_QUOTED_FIELDS) {
       if(c == t->quote_char) {
-        if(!field_width) {
+        if(!field_width && !field_is_quoted) {
           field_is_quoted = 1;
   #if defined(SV_DEBUG) && SV_DEBUG > 1
           fprintf(stderr, "Field is quoted\n");
   #endif
           continue;
+        } else if(column < len && line[column+1] == t->quote_char) {
+  #if defined(SV_DEBUG) && SV_DEBUG > 1
+          fprintf(stderr, "Doubled quote %c absorbed\n", t->quote_char);
+  #endif
+          column++;
+          /* skip repeated quote - so it just replaces ""... with " */
+          goto skip;
         } else if(column == len-1 || line[column+1] == t->field_sep) {
   #if defined(SV_DEBUG) && SV_DEBUG > 1
           fprintf(stderr, "Field ended on quote + sep\n");
@@ -379,23 +385,7 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
           field_ended = 1;
           expect_sep = 1;
           goto do_last;
-        } else {
-  #if defined(SV_DEBUG) && SV_DEBUG > 1
-          fprintf(stderr, "Inner quote\n");
-  #endif
-          /* inner quote */
-          quote_count++;
         }
-      } else
-        quote_count = 0;
-
-      if(quote_count == 2) {
-  #if defined(SV_DEBUG) && SV_DEBUG > 1
-        fprintf(stderr, "Double quote absorbed\n");
-  #endif
-        quote_count = 0;
-        /* skip repeated quote - so it just replaces ""... with " */
-        goto skip;
       }
     }
 
@@ -426,21 +416,6 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
           current_field[field_width] = '\0';
         }
 
-        if(field_width > 1) {
-          /* Remove quotes around quoted field */
-          if(field_is_quoted &&
-             current_field[0] == t->quote_char &&
-             current_field[field_width-1] == t->quote_char) {
-            field_width -= 2;
-
-            /* save a memcpy: move the start of the field forward a byte */
-            /* memcpy(&current_field[0], &current_field[1], field_width); */
-            current_field++;
-
-            current_field[field_width] = '\0';
-          }
-        }
-
         if(expect_sep)
           column++;
 
@@ -461,7 +436,6 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
         break;
       
       /* otherwise got a tab so reset for next field */
-      quote_count = 0;
       field_width = 0;
       field_is_quoted = 0;
 
