@@ -3,19 +3,24 @@ SVLIBOBJS=sv.o
 
 EXSRCS=example.c sv2c.c
 EXAMPLES=example sv2c
+TESTSRCS=svtest.c
 
-SRCS=$(EXSRCS) $(SVLIBSRCS)
+SRCS=$(EXSRCS) $(SVLIBSRCS) $(TESTSRCS)
 EXES=$(EXAMPLES)
 TESTS=svtest
 
-CLEANFILES=$(EXES) $(TESTS)
+CLEANFILES=$(EXES) $(TESTS) \
+stamp-h1
 
 TEST_FILES=test1.csv \
 zero.tsv \
 one.tsv \
 test1.tsv
 
-FILES=README COPYING COPYING.LIB LICENSE-2.0.txt LICENSE.txt NOTICE \
+FILES=README.md \
+GNUMakefile \
+AUTHORS ChangeLog COPYING COPYING.LIB INSTALL LICENSE.txt LICENSE-2.0.txt \
+NOTICE NEWS README configure.ac Makefile.am \
 $(TEST_FILES) \
 $(SRCS)
 
