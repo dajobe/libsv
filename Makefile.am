@@ -72,3 +72,26 @@ endif
 
 # Some people need a little help ;-)
 test: check
+
+if MAINTAINER_MODE
+
+.PHONY: update-ChangeLog
+
+# Requires gitlog-to-changelog from
+# http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;f=build-aux/gitlog-to-changelog
+update-ChangeLog:
+	if test -d $(srcdir)/.git; then                         \
+	   gitlog-to-changelog                        \
+	      --format='* %s%n%b%n'                             \
+	      --strip-tab --strip-cherry-pick                   \
+	      -- $$(cat $(srcdir)/.last-cl-gen)..               \
+	    >ChangeLog.tmp                                      \
+	  && git rev-list -n 1 HEAD >.last-cl-gen.tmp           \
+	  && (echo; cat $(srcdir)/ChangeLog) >>ChangeLog.tmp    \
+	  && mv -f ChangeLog.tmp $(srcdir)/ChangeLog            \
+	  && mv -f .last-cl-gen.tmp $(srcdir)/.last-cl-gen      \
+	  && rm -f ChangeLog.tmp;                               \
+	fi
+endif
+
+EXTRA_DIST += .last-cl-gen
