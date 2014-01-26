@@ -146,7 +146,7 @@ main(int argc, char *argv[])
     goto tidy;
   }
 
-  memset(&c, sizeof(c), '\0');
+  memset(&c, '\0', sizeof(c));
   c.filename = data_file;
   c.count = 0;
   c.line = NULL;
