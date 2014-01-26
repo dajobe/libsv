@@ -25,7 +25,7 @@ one.tsv \
 test1.tsv
 
 
-TESTS=$(check_PROGRAMS)
+TESTS=svtest$(EXEEXT)
 
 check_PROGRAMS=svtest$(EXEEXT)
 
@@ -61,13 +61,6 @@ analyze: $(SOURCES)
 	  fi; \
 	done; \
 	set -e; exit $$result
-endif
-
-if MAINTAINER_MODE
-
-$(srcdir)/README: $(srcdir)/README.md
-	cp $< $@
-
 endif
 
 # Some people need a little help ;-)
