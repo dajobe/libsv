@@ -33,7 +33,7 @@ defines HAVE_STDLIB_H etc. as needed by sv.h and sv.c
 Optionally you might want in this file to redefine the exposed API
 symbols with lines like:
 
-    #define sv_init example_sv_init
+    #define sv_new example_sv_new
     #define sv_free example_sv_free
     #define sv_set_option example_sv_set_option
     #define sv_get_line example_sv_get_line

@@ -194,7 +194,7 @@ main(int argc, char *argv[])
   }
   c.sep = sep;
 
-  t = sv_init(&c, NULL, sv2c_fields_callback, sep);
+  t = sv_new(&c, NULL, sv2c_fields_callback, sep);
   if(!t) {
     fprintf(stderr, "%s: Failed to init SV library", program);
     rc = 1;

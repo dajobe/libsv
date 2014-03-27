@@ -218,7 +218,7 @@ svtest_run_test(unsigned int test_index)
   
   data_len = strlen(test->data);
 
-  t = sv_init(&c, svtest_header_callback, svtest_fields_callback, test->sep);
+  t = sv_new(&c, svtest_header_callback, svtest_fields_callback, test->sep);
   if(!t) {
     fprintf(stderr, "%s: Failed to init SV library", program);
     rc = 1;

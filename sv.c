@@ -94,10 +94,21 @@ struct sv_s {
 };
 
 
+/**
+ * sv_new:
+ * @user_data: user data to use for callbacks
+ * @header_callback: callback to receive headers (or NULL)
+ * @data_callback: callback to receive data rows (or NULL)
+ * @field_sep: field separator ',' or '\t'
+ *
+ * Constructor - create an SV object
+ *
+ * Return value: new SV object or NULL on failure.
+ */
 sv*
-sv_init(void *user_data, sv_fields_callback header_callback,
-        sv_fields_callback data_callback,
-        char field_sep)
+sv_new(void *user_data, sv_fields_callback header_callback,
+       sv_fields_callback data_callback,
+       char field_sep)
 {
   sv *t;
 
@@ -187,6 +198,13 @@ sv_init_fields(sv *t)
 }
 
 
+/**
+ * sv_free:
+ * @t: SV object
+ *
+ * Destructor: destroy an SV object
+ *
+ */
 void
 sv_free(sv *t)
 {

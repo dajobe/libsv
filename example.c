@@ -161,7 +161,7 @@ main(int argc, char *argv[])
   }
   
   /* save first line as header not data */
-  t = sv_init(&c, my_sv_header_callback, my_sv_fields_callback, sep);
+  t = sv_new(&c, my_sv_header_callback, my_sv_fields_callback, sep);
   if(!t) {
     fprintf(stderr, "%s: Failed to init SV library", program);
     rc = 1;
