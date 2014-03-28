@@ -21,6 +21,15 @@
  */
 
 
+/**
+ * sv_status_t:
+ * @SV_STATUS_OK: OK
+ * @SV_STATUS_FAILED: Failure
+ * @SV_STATUS_NO_MEMORY: Out of memory
+ * @SV_STATUS_LINE_FIELDS: Line had wrong number of fields
+ *
+ * Status / errors
+*/
 typedef enum {
   SV_STATUS_OK = 0,
   SV_STATUS_FAILED,
@@ -29,9 +38,48 @@ typedef enum {
 } sv_status_t;
 
 typedef struct sv_s sv;
+
+/**
+ * @sv_fields_callback: 
+ * @t: sv object
+ * @user_data: user data
+ * @fields: array of fields
+ * @widths: array of field widths
+ * @count: size of @fields and @widths
+ *
+ * Callback function for sv_new() header_callback and data_callback
+ *
+ * Return value: #SV_STATUS_OK or error code
+ */
 typedef sv_status_t (*sv_fields_callback)(sv *t, void *user_data, char** fields, size_t *widths, size_t count);
+
+/**
+ * @sv_line_callback: 
+ * @t: sv object
+ * @user_data: user data
+ * @line: line buffer
+ * @length: size of @line
+ *
+ * Callback function for lines set via sv_set_option() with #SV_OPTION_LINE_CALLBACK
+ *
+ * Return value: #SV_STATUS_OK or error code
+ */
 typedef sv_status_t (*sv_line_callback)(sv *t, void *user_data, const char* line, size_t length);
 
+
+/**
+ * sv_option_t:
+ * 
+ * @SV_OPTION_NONE: internal
+ * @SV_OPTION_SAVE_HEADER: save header boolean; type long
+ * @SV_OPTION_BAD_DATA_ERROR: bad dad is error boolean; type long
+ * @SV_OPTION_QUOTED_FIELDS: fields are quoted boolean; type long
+ * @SV_OPTION_STRIP_WHITESPACE: strip whitespace around fields boolean; type long
+ * @SV_OPTION_QUOTE_CHAR: set field quote char; type int (char)
+ * @SV_OPTION_LINE_CALLBACK: Set line callback of type #sv_line_callback
+ *
+ * Option type
+ */
 typedef enum {
   SV_OPTION_NONE = 0,
   SV_OPTION_SAVE_HEADER,

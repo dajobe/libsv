@@ -299,6 +299,14 @@ sv_ensure_line_buffer_size(sv *t, size_t len)
 }
 
 
+/**
+ * sv_get_line:
+ * @t: sv object
+ *
+ * Get current SV line number
+ *
+ * Return value: line number or <0 on failure
+ */
 int
 sv_get_line(sv *t)
 {
@@ -309,6 +317,16 @@ sv_get_line(sv *t)
 }
 
 
+/**
+ * sv_get_header:
+ * @t: sv object
+ * @i: header index 0
+ * @width_p: pointer to store width (or NULL)
+ *
+ * Get an SV header with optional width
+ *
+ * Return value: shared pointer to header or NULL if out of range
+ */
 const char*
 sv_get_header(sv *t, unsigned int i, size_t *width_p)
 {
@@ -581,6 +599,18 @@ sv_parse_chunk_line(sv* t, size_t line_len, int has_nl)
 }
 
 
+/**
+ * sv_parse_chunk:
+ * @t: sv object
+ * @buffer: buffer to parse (or NULL)
+ * @len: length of @buffer (or 0)
+ *
+ * Parse a chunk of data
+ *
+ * Parsing ends if either @buffer is NULL or @len is 0
+ *
+ * Return value: #SV_STATUS_OK on success
+ */
 sv_status_t
 sv_parse_chunk(sv *t, char *buffer, size_t len)
 {
@@ -707,6 +737,15 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
 }
   
 
+/**
+ * sv_set_option:
+ * @t: sv object
+ * @option: option name
+ *
+ * Set an option value.  The value varies in type dependent on the @option
+ *
+ * Return value: #SV_STATUS_FAILED if failed
+ */
 sv_status_t
 sv_set_option(sv *t, sv_option_t option, ...)
 {
