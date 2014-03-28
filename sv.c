@@ -537,12 +537,16 @@ sv_parse_chunk_line(sv* t, size_t line_len, int has_nl)
       
     for(i = 0; i < t->fields_count; i++) {
       char *s = (char*)malloc(t->fields_widths[i]+1);
+      if(!s) {
+        status = SV_STATUS_NO_MEMORY;
+        break;
+      }
       memcpy(s, t->fields[i], t->fields_widths[i]+1);
       t->headers[i] = s;
       t->headers_widths[i] = t->fields_widths[i];
     }
 
-    if(t->header_callback) {
+    if(status == SV_STATUS_OK && t->header_callback) {
       /* got header fields - return them to user */
       status = t->header_callback(t, t->callback_user_data, t->headers, 
                                   t->headers_widths, t->fields_count);
