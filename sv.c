@@ -152,6 +152,8 @@ sv_new(void *user_data, sv_fields_callback header_callback,
 
   t->quote_char = '"';
 
+  t->line_callback = NULL;
+
   return t;
 }
 
