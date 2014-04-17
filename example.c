@@ -121,9 +121,11 @@ main(int argc, char *argv[])
   myc c;
   size_t data_file_len;
   char sep = '\t'; /* default is TSV */
-  
+
   program = "example";
   
+  memset(&c, '\0', sizeof(c));
+
   if(argc != 2) {
     fprintf(stderr, "USAGE: %s [SV FILE]\n", program);
     rc = 1;
@@ -146,7 +148,6 @@ main(int argc, char *argv[])
     goto tidy;
   }
 
-  memset(&c, '\0', sizeof(c));
   c.filename = data_file;
   c.count = 0;
   c.line = NULL;
