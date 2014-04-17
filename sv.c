@@ -727,6 +727,7 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
         sv_line_callback cb = (sv_line_callback)va_arg(arg, void*);
         t->line_callback = cb;
       }
+      break;
 
     default:
     case SV_OPTION_NONE:
