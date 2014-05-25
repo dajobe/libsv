@@ -160,7 +160,9 @@ main(int argc, char *argv[])
     else if(!strcmp(data_file + data_file_len - 3, "tsv"))
       sep = '\t';
   }
-  
+
+  fprintf(stderr, "%s: Using separator '%c'\n", program, sep);
+
   /* save first line as header not data */
   t = sv_new(&c, my_sv_header_callback, my_sv_fields_callback, sep);
   if(!t) {
