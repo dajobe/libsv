@@ -1,8 +1,8 @@
 SVLIBSRCS=sv.c sv.h
 SVLIBOBJS=sv.o
 
-EXSRCS=example.c sv2c.c
-EXAMPLES=example sv2c
+EXSRCS=example.c sv2c.c gen.c
+EXAMPLES=example sv2c gen
 TESTSRCS=svtest.c
 
 SRCS=$(EXSRCS) $(SVLIBSRCS) $(TESTSRCS)
@@ -31,7 +31,7 @@ PV=$(PACKAGE)-$(VERSION)
 TARBALL=$(PV).tar.gz
 
 LDFLAGS=-g
-CPPFLAGS=-g -I. -DHAVE_STDLIB_H -DHAVE_UNISTD_H -DHAVE_ERRNO_H
+CPPFLAGS=-g -I. -DHAVE_STDLIB_H -DHAVE_UNISTD_H -DHAVE_ERRNO_H -DSV_DEBUG=2
 
 all: $(EXES)
 
@@ -42,11 +42,13 @@ sv.c: sv.h
 example: example.o $(SVLIBOBJS)
 svtest: svtest.o $(SVLIBOBJS)
 sv2c: sv2c.o $(SVLIBOBJS)
+gen: gen.o $(SVLIBOBJS)
 
 # Source Deps
 sv2c.c: sv.h
 svtest.c: sv.h
 example.c: sv.h
+gen.c: sv.h
 
 dist: $(FILES)
 	rm -rf $(PV) && \

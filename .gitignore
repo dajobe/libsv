@@ -12,3 +12,4 @@ example
 libsv.la
 sv2c
 svtest
+gen
