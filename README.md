@@ -39,6 +39,7 @@ symbols with lines like:
     #define sv_get_line example_sv_get_line
     #define sv_get_header example_sv_get_header
     #define sv_parse_chunk example_sv_parse_chunk
+    #define sv_write_fields example_sv_write_fields
 
 You can see this demonstrated inside [Rasqal](https://github.com/dajobe/rasqal)
 

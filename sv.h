@@ -96,7 +96,9 @@ void sv_free(sv *t);
 sv_status_t sv_set_option(sv *t, sv_option_t option, ...);
 
 int sv_get_line(sv *t);
+
 const char* sv_get_header(sv *t, unsigned int i, size_t *width_p);
 
 sv_status_t sv_parse_chunk(sv *t, char *buffer, size_t len);
 
+sv_status_t sv_write_fields(sv *t, FILE* fh, char** fields, size_t *widths, size_t count);

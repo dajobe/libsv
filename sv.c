@@ -761,3 +761,75 @@ sv_set_option(sv *t, sv_option_t option, ...)
 
   return status;
 }
+
+
+/**
+ * sv_write_field:
+ * @t: sv object
+ * @fh: file handle to write to
+ * @field: field to write
+ * @width: width of @field
+ *
+ * INTERNAL: Write a SV formatted field to a file handle
+ */
+static sv_status_t
+sv_write_field(sv* t, FILE* fh, const char* field, size_t width)
+{
+  int needs_quote = 0;
+  const char *p;
+
+  for(p = field; *p ; p++) {
+    if(*p == t->field_sep || *p == t->quote_char || *p == '\r' || *p == '\n') {
+      needs_quote = 1;
+      break;
+    }
+  }
+
+  if(needs_quote) {
+    fputc(t->quote_char, fh);
+    for(p = field; *p ; p++) {
+      if(*p == t->quote_char)
+        fputc(*p, fh);
+      fputc(*p, fh);
+    }
+    fputc(t->quote_char, fh);
+  } else
+    fwrite(field, 1, width, fh);
+
+  return SV_STATUS_OK;
+}
+
+
+
+/**
+ * sv_write_fields:
+ * @t: sv object
+ * @fh: FILE handle to write to
+ * @fields: array of fields of length @count
+ * @widths: array of widths of length @count (or NULL)
+ * @count: number of fields
+ *
+ * Write a row of fields to a file handle with escaping
+ */
+sv_status_t
+sv_write_fields(sv *t, FILE* fh, char** fields, size_t *widths, size_t count)
+{
+  sv_status_t status = SV_STATUS_OK;
+  int i;
+
+  for(i = 0; i < count; i++) {
+    char* field = fields[i];
+    size_t width;
+    if(!field)
+      break;
+
+    if(i > 0)
+      fputc(t->field_sep, fh);
+
+    width = widths ? widths[i] : strlen(field);
+    sv_write_field(t, fh, field, width);
+  }
+  fputc('\n', fh);
+
+  return status;
+}
