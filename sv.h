@@ -93,6 +93,8 @@ typedef enum {
 sv* sv_new(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep);
 void sv_free(sv *t);
 
+void sv_reset(sv *t);
+
 sv_status_t sv_set_option(sv *t, sv_option_t option, ...);
 
 int sv_get_line(sv *t);

@@ -35,6 +35,7 @@ symbols with lines like:
 
     #define sv_new example_sv_new
     #define sv_free example_sv_free
+    #define sv_reset example_sv_reset
     #define sv_set_option example_sv_set_option
     #define sv_get_line example_sv_get_line
     #define sv_get_header example_sv_get_header

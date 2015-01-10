@@ -118,41 +118,14 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   t = (sv*)malloc(sizeof(*t));
   if(!t)
     return NULL;
-  
+
   t->field_sep = field_sep;
 
-  t->line = 1;
-  
   t->callback_user_data = user_data;
   t->header_callback = header_callback;
   t->data_callback = data_callback;
 
-  t->buffer = NULL;
-  t->size = 0;
-  t->len = 0;
-
-  t->fields_count = 0;
-  t->fields = NULL;
-  t->fields_widths = NULL;
-
-  t->fields_buffer = NULL;  
-  t->fields_buffer_size = 0;
-  
-  t->headers = NULL;
-  t->headers_widths = NULL;
-
-  /* default flags */
-  t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
-
-  t->status = SV_STATUS_OK;
-
-  t->bad_records = 0;
-
-  t->last_char = '\0';
-
-  t->quote_char = '"';
-
-  t->line_callback = NULL;
+  sv_reset(t);
 
   return t;
 }
@@ -201,6 +174,85 @@ sv_init_fields(sv *t)
 
 
 /**
+ * sv_reset:
+ * @sv: SV object
+ * Reset the SV object for new input
+ *
+ * This discards any existing parsing state.
+ */
+void
+sv_reset(sv *t)
+{
+
+  if(t->headers_widths) {
+    free(t->headers_widths);
+    t->headers_widths = NULL;
+  }
+
+  if(t->headers) {
+    unsigned int i;
+    
+    for(i = 0; i < t->fields_count; i++)
+      free(t->headers[i]);
+    free(t->headers);
+    t->headers = NULL;
+  }
+
+  if(t->fields_buffer) {
+    free(t->fields_buffer);
+    t->fields_buffer = NULL;
+  }
+
+  if(t->fields_widths) {
+    free(t->fields_widths);
+    t->fields_widths = NULL;
+  }
+
+  if(t->fields) {
+    free(t->fields);
+    t->fields = NULL;
+  }
+
+  if(t->buffer) {
+    free(t->buffer);
+    t->buffer = NULL;
+  }
+
+
+  /* Set initial state */
+  t->line = 1;
+
+  t->buffer = NULL;
+  t->size = 0;
+  t->len = 0;
+
+  t->fields_count = 0;
+  t->fields = NULL;
+  t->fields_widths = NULL;
+
+  t->fields_buffer = NULL;
+  t->fields_buffer_size = 0;
+
+  t->headers = NULL;
+  t->headers_widths = NULL;
+
+  /* default flags */
+  t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
+
+  t->status = SV_STATUS_OK;
+
+  t->bad_records = 0;
+
+  t->last_char = '\0';
+
+  t->quote_char = '"';
+
+  t->line_callback = NULL;
+
+}
+
+
+/**
  * sv_free:
  * @t: SV object
  *
@@ -213,27 +265,8 @@ sv_free(sv *t)
   if(!t)
     return;
 
-  if(t->headers_widths)
-    free(t->headers_widths);
-  if(t->headers) {
-    unsigned int i;
-    
-    for(i = 0; i < t->fields_count; i++)
-      free(t->headers[i]);
-    free(t->headers);
-  }
-  
+  sv_reset(t);
 
-  if(t->fields_buffer)
-    free(t->fields_buffer);
-
-  if(t->fields_widths)
-    free(t->fields_widths);
-  if(t->fields)
-    free(t->fields);
-  if(t->buffer)
-    free(t->buffer);
-  
   free(t);
 }
 
