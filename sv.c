@@ -609,7 +609,7 @@ sv_parse_chunk_line(sv* t, size_t line_len, int has_nl)
  *
  * Parse a chunk of data
  *
- * Parsing ends if either @buffer is NULL or @len is 0
+ * The input data is finished (EOF) if either @buffer is NULL or @len is 0
  *
  * Return value: #SV_STATUS_OK on success
  */
