@@ -2,7 +2,7 @@
  *
  * sv2c.c - Turn CSV/TSV into C data
  *
- * Copyright (C) 2014, David Beckett http://www.dajobe.org/
+ * Copyright (C) 2014-2015, Dave Beckett http://www.dajobe.org/
  *
  * This package is Free Software
  *

@@ -2,7 +2,7 @@
  *
  * sv.c - Parse separated-values (CSV, TSV) files
  *
- * Copyright (C) 2009-2014, David Beckett http://www.dajobe.org/
+ * Copyright (C) 2009-2015, Dave Beckett http://www.dajobe.org/
  * 
  * This package is Free Software
  * 

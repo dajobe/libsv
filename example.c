@@ -2,7 +2,7 @@
  *
  * example.c - SV example program
  *
- * Copyright (C) 2009-2013, David Beckett http://www.dajobe.org/
+ * Copyright (C) 2009-2015, Dave Beckett http://www.dajobe.org/
  * 
  * This package is Free Software
  * 

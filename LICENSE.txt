@@ -10,7 +10,7 @@
    license text.
      __________________________________________________________________
 
-     Copyright (C) 2009 David Beckett
+     Copyright (C) 2009-2015 Dave Beckett
 
      This package is free software; you can redistribute it and/or modify
      it under the terms of the GNU Lesser General Public License Version
@@ -38,7 +38,7 @@
 
    See LICENSE-2.0.txt for the full license text.
 
-     Copyright (C) 2009 David Beckett
+     Copyright (C) 2009-2015 Dave Beckett
 
      Licensed under the Apache License, Version 2.0 (the "License"); you
      may not use this file except in compliance with the License. You may
@@ -56,4 +56,4 @@
    section 4(d) of the Apache License, Version 2.0.
      __________________________________________________________________
 
-   Copyright (C) 2009 David Beckett
+   Copyright (C) 2009-2015 Dave Beckett
