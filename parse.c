@@ -36,6 +36,58 @@
 #include "sv_internal.h"
 
 
+void
+sv_internal_parse_reset(sv* t)
+{
+  if(t->headers_widths) {
+    free(t->headers_widths);
+    t->headers_widths = NULL;
+  }
+
+  if(t->headers) {
+    unsigned int i;
+
+    for(i = 0; i < t->fields_count; i++)
+      free(t->headers[i]);
+    free(t->headers);
+    t->headers = NULL;
+  }
+
+  if(t->fields_buffer) {
+    free(t->fields_buffer);
+    t->fields_buffer = NULL;
+  }
+  t->fields_buffer_size = 0;
+
+  if(t->fields_widths) {
+    free(t->fields_widths);
+    t->fields_widths = NULL;
+  }
+
+  if(t->fields) {
+    free(t->fields);
+    t->fields = NULL;
+  }
+  t->fields_count = 0;
+
+  if(t->buffer) {
+    free(t->buffer);
+    t->buffer = NULL;
+  }
+  t->size = 0;
+  t->len = 0;
+
+  /* Set initial state */
+  t->line = 1;
+
+  t->status = SV_STATUS_OK;
+
+  t->bad_records = 0;
+
+  t->last_char = '\0';
+}
+
+
 static sv_status_t
 sv_init_fields(sv *t)
 {
