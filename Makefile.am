@@ -17,7 +17,7 @@ AM_CPPFLAGS = -DSV_CONFIG -I$(top_srcdir)/src
 noinst_HEADERS = sv_internal.h
 
 libsv_la_SOURCES = \
-sv.c option.c write.c \
+sv.c option.c write.c parse.c \
 sv.h
 
 EXTRA_DIST = \

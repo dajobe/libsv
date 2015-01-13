@@ -80,4 +80,7 @@ struct sv_s {
   sv_line_callback line_callback;
 };
 
+
+sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);
+
 #endif
