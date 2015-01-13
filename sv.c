@@ -56,7 +56,7 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   if(field_sep != '\t' && field_sep != ',')
     return NULL;
   
-  t = (sv*)malloc(sizeof(*t));
+  t = (sv*)calloc(1, sizeof(*t));
   if(!t)
     return NULL;
 
