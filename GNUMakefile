@@ -1,5 +1,5 @@
-SVLIBSRCS=sv.c sv.h
-SVLIBOBJS=sv.o
+SVLIBSRCS=sv.c option.c write.c sv.h sv_internal.h
+SVLIBOBJS=sv.o option.o write.o
 
 EXSRCS=example.c sv2c.c gen.c
 EXAMPLES=example sv2c gen

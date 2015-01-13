@@ -20,6 +20,7 @@
  * 
  */
 
+#include <stdio.h>
 
 /**
  * sv_status_t:
