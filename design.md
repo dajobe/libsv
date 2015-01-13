@@ -9,6 +9,37 @@ Goals:
 * Handle EOL in fields
 
 
+State diagram
+=============
+
+
+                     Table: list of rows  Row: list of cells    Cell: string
+                            encoding           comment string         row number
+                                               row number             column number
+         +=======+
+         ||START||
+         +=======+
+             |                                       +-------+                 +------------------+
+             |                                       |       |Delim            |                  |
+             v                                       v       +(empty field)    v                  +
+     +----------------+    +---------------+       +-----------+       +---------------+   +---------------+
+     |Start file      |    |Start record   |No EOL |Start field| Quote |In Quoted Field|   |Esc in quoted  |
+     |----------------|    |---------------|------>|-----------|>----->|---------------|ESC|---------------|
+     |Look for BOM    |--->|               | #     |           | else  |trim ws        |+->|               |
+     |and set encoding|    |               |>--+   |           |>---+  |               |   |               |
+     +----------------+    +--+------------+   |   +-----------+    |  +---------------+   +---------------+
+                              |    ^  ^        |      EOL v         |
+                           EOL|    |  |Not EOL |    (empty|field)   |          +------------------+
+                              |    +----------------------|         |          |                  |
+                              v       |        |                    |          v                  |
+                           +----------+----+   |   +------------+   |  +--------------+    +------+--------+
+                      +--->|End of Line    |   |   |Comment     |   |  |In Field      |    |Esc in field   |
+                      |    |---------------|   +-->|------------|   +->|--------------|ESC |---------------|
+                      |EOL |line++         |   EOL |Save content|      |trim ws       |+-->|               |
+                      +----|               |<------|            |      |              |    |               |
+                           +---------------+       +------------+      +--------------+    +---------------+
+
+
 Implementation
 ==============
 
@@ -96,34 +127,3 @@ Code sketch of data model and flags.
       unsigned int skip_blank_rows:1; /* default 0 (false) */
       unsigned int trim:2; /* 0 (false), 1 (start), 2 (end), 3 (both / true) */
     } sv_parse;
-
-
-State diagram
-=============
-
-
-                     Table: list of rows  Row: list of cells    Cell: string
-                            encoding           comment string         row number
-                                               row number             column number
-         +=======+
-         ||START||
-         +=======+
-             |                                       +-------+                 +------------------+
-             |                                       |       |Delim            |                  |
-             v                                       v       +(empty field)    v                  +
-     +----------------+    +---------------+       +-----------+       +---------------+   +---------------+
-     |Start file      |    |Start record   |No EOL |Start field| Quote |In Quoted Field|   |Esc in quoted  |
-     |----------------|    |---------------|------>|-----------|>----->|---------------|ESC|---------------|
-     |Look for BOM    |--->|               | #     |           | else  |trim ws        |+->|               |
-     |and set encoding|    |               |>--+   |           |>---+  |               |   |               |
-     +----------------+    +--+------------+   |   +-----------+    |  +---------------+   +---------------+
-                              |    ^  ^        |      EOL v         |
-                           EOL|    |  |Not EOL |    (empty|field)   |          +------------------+
-                              |    +----------------------|         |          |                  |
-                              v       |        |                    |          v                  |
-                           +----------+----+   |   +------------+   |  +--------------+    +------+--------+
-                      +--->|End of Line    |   |   |Comment     |   |  |In Field      |    |Esc in field   |
-                      |    |---------------|   +-->|------------|   +->|--------------|ESC |---------------|
-                      |EOL |line++         |   EOL |Save content|      |trim ws       |+-->|               |
-                      +----|               |<------|            |      |              |    |               |
-                           +---------------+       +------------+      +--------------+    +---------------+
