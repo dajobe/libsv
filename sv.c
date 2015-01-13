@@ -65,6 +65,11 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   t->callback_user_data = user_data;
   t->header_callback = header_callback;
   t->data_callback = data_callback;
+  t->line_callback = NULL;
+
+  /* default flags */
+  t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
+  t->quote_char = '"';
 
   sv_reset(t);
 
@@ -82,13 +87,6 @@ sv_new(void *user_data, sv_fields_callback header_callback,
 void
 sv_reset(sv *t)
 {
-  /* default flags */
-  t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
-
-  t->quote_char = '"';
-
-  t->line_callback = NULL;
-
   sv_internal_parse_reset(t);
 }
 
