@@ -3,10 +3,9 @@ SV Parser Design
 
 Goals:
 * work character by character
-* support
-  [Model for Tabular Data and Metadata on the Web](http://www.w3.org/TR/tabular-data-model/)
-  from W3C [CSV on the Web Working Group](http://www.w3.org/2013/csvw/wiki/Main_Page)
-* Handle EOL in fields
+* support [Model for Tabular Data and Metadata on the Web][1]
+  from W3C [CSV on the Web Working Group][2]
+* Handle EOL in fields: existing parser fails this
 
 
 State diagram
@@ -127,3 +126,7 @@ Code sketch of data model and flags.
       unsigned int skip_blank_rows:1; /* default 0 (false) */
       unsigned int trim:2; /* 0 (false), 1 (start), 2 (end), 3 (both / true) */
     } sv_parse;
+
+
+[1]: http://www.w3.org/TR/tabular-data-model/
+[2]: http://www.w3.org/2013/csvw/wiki/Main_Page
