@@ -9,7 +9,8 @@ Goals:
 * Handle EOL in fields (bug)
 * Handle Nulls: allow at least ,, and ,"", and ,\N, for nulls in CSV (feature)
 * Handle Unicode encodings (feature)
-
+* Handle \ before \r or \n
+* Handle \ as last character. Act as if a newline was given on last line.
 
 ## State diagram ##
 
@@ -55,8 +56,8 @@ typedef enum  {
   SV_STATE_START_FILE,
   /* After any BOM and expecting record start */
   SV_STATE_START_RECORD,
-  /* Accepted \r or \n - new line; handle \r\n as 1 EOL */
-  SV_STATE_EOL,
+  /* Accepted \r; handle \r\n as 1 EOL */
+  SV_STATE_CR,
   /* Accepted # - read a commented row up to EOL */
   SV_STATE_COMMENT,
   /* Starting a cell */
