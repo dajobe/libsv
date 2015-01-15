@@ -78,7 +78,7 @@ my_sv_header_callback(sv *t, void *user_data,
 {
   unsigned int i;
   myc *c=(myc*)user_data;
-  
+
   fprintf(stdout, "%s:%d: Header with %d fields\n",
           c->filename, sv_get_line(t), (int)count);
   for(i = 0; i < count; i++)
@@ -96,9 +96,9 @@ my_sv_fields_callback(sv *t, void *user_data,
 {
   unsigned int i;
   myc *c=(myc*)user_data;
-  
+
   c->count++;
-  
+
   fprintf(stdout, "%s:%d: Record with %d fields\n",
           c->filename, sv_get_line(t), (int)count);
   for(i = 0; i < count; i++)
@@ -123,7 +123,7 @@ main(int argc, char *argv[])
   char sep = '\t'; /* default is TSV */
 
   program = "example";
-  
+
   memset(&c, '\0', sizeof(c));
 
   if(argc != 2) {
@@ -172,11 +172,11 @@ main(int argc, char *argv[])
   }
 
   sv_set_option(t, SV_OPTION_LINE_CALLBACK, my_sv_line_callback);
-  
+
   while(!feof(fh)) {
     char buffer[1024];
     size_t len = fread(buffer, 1, sizeof(buffer), fh);
-    
+
     if(sv_parse_chunk(t, buffer, len))
       break;
   }
@@ -185,9 +185,9 @@ main(int argc, char *argv[])
 
   /* Record EOF */
   sv_parse_chunk(t, NULL, 0);
-  
+
   fprintf(stderr, "%s: Saw %d records\n", program, c.count);
-  
+
  tidy:
   if(c.line)
     free(c.line);
@@ -199,6 +199,6 @@ main(int argc, char *argv[])
     fclose(fh);
     fh = NULL;
   }
-  
+
   return rc;
 }

@@ -193,7 +193,7 @@ svtest_fields_callback(sv *t, void *user_data,
   }
 
   c->rows_count++;
-  
+
   /* This code always succeeds */
   return SV_STATUS_OK;
 }
@@ -208,14 +208,14 @@ svtest_run_test(unsigned int test_index)
   const svtest_data_set *test = &svtest_data[test_index];
   sv_status_t status;
   int rc = 0;
-  
+
   memset(&c, '\0', sizeof(c));
   c.test_index = test_index;
   c.columns_count = 0;
   c.rows_count = 0;
   c.expected = test;
   c.line = NULL;
-  
+
   data_len = strlen(test->data);
 
   t = sv_new(&c, svtest_header_callback, svtest_fields_callback, test->sep);
@@ -229,7 +229,7 @@ svtest_run_test(unsigned int test_index)
 
   if(test->option != 0)
     sv_set_option(t, (sv_option_t)test->option, 1L);
-  
+
   status = sv_parse_chunk(t, (char*)test->data, data_len);
   if(status != SV_STATUS_OK) {
     fprintf(stderr, "%s: Test %d FAIL - sv_parse_chunk() returned %d\n",
@@ -245,7 +245,7 @@ svtest_run_test(unsigned int test_index)
       rc = 1;
       goto end_test;
   }
-  
+
   if(c.header_errors) {
     fprintf(stderr, "%s: Test %d FAIL '%s' - header errors\n",
             program, test_index, test->data);
@@ -262,11 +262,11 @@ svtest_run_test(unsigned int test_index)
     fprintf(stderr, "%s: Test %d OK\n",
             program, test_index);
   }
-  
+
   end_test:
   if(c.line)
     free(c.line);
-  
+
   sv_free(t);
 
   return rc;
@@ -288,7 +288,7 @@ main(int argc, char *argv[])
   else if((p = strrchr(program, '\\')))
     program = p + 1;
   argv[0] = program;
-  
+
   if(argc < 1 || argc > 2) {
     fprintf(stderr, "USAGE: %s [TEST-INDEX 1..%d]\n", program, MAX_TEST_INDEX);
     rc = 1;
@@ -321,7 +321,7 @@ main(int argc, char *argv[])
       }
     }
   }
-  
+
  tidy:
 
   return rc;

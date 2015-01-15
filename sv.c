@@ -55,7 +55,7 @@ sv_new(void *user_data, sv_fields_callback header_callback,
 
   if(field_sep != '\t' && field_sep != ',')
     return NULL;
-  
+
   t = (sv*)calloc(1, sizeof(*t));
   if(!t)
     return NULL;
@@ -147,7 +147,7 @@ sv_get_header(sv *t, unsigned int i, size_t *width_p)
 
   if(width_p)
     *width_p = t->headers_widths[i];
-  
+
   return (const char*)t->headers[i];
 }
 
