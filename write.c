@@ -56,8 +56,11 @@ sv_write_field(sv* t, FILE* fh, const char* field, size_t width)
   if(needs_quote) {
     fputc(t->quote_char, fh);
     for(p = field; *p ; p++) {
-      if(*p == t->quote_char)
-        fputc(*p, fh);
+      if(*p == t->quote_char) {
+        if(t->flags & SV_FLAGS_DOUBLE_QUOTE)
+          fputc(*p, fh);
+        /* else FIXME - what to do when cannot double a quote? */
+      }
       fputc(*p, fh);
     }
     fputc(t->quote_char, fh);

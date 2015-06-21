@@ -259,7 +259,8 @@ sv_parse_line(sv *t, char *line, size_t len,  unsigned int* field_count_p)
           fprintf(stderr, "Field is quoted\n");
   #endif
           continue;
-        } else if(column < len && line[column+1] == t->quote_char) {
+        } else if((t->flags & SV_FLAGS_DOUBLE_QUOTE) &&
+                  column < len && line[column+1] == t->quote_char) {
   #if defined(SV_DEBUG) && SV_DEBUG > 1
           fprintf(stderr, "Doubled quote %c absorbed\n", t->quote_char);
   #endif

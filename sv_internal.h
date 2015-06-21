@@ -31,7 +31,8 @@
 #define SV_FLAGS_QUOTED_FIELDS  (1<<2)
 /* strip (non-separator) whitespace around fields */
 #define SV_FLAGS_STRIP_WHITESPACE  (1<<3)
-
+/* double a quote to quote it (primarily for ") */
+#define SV_FLAGS_DOUBLE_QUOTE      (1<<4)
 
 struct sv_s {
   /* field separator: '\t' or ',' */
@@ -83,5 +84,8 @@ struct sv_s {
 void sv_internal_parse_reset(sv* t);
 
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);
+
+/* sv.c */
+void sv_set_quote_char(sv *t, char quote_char);
 
 #endif

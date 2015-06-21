@@ -69,7 +69,7 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       if(1) {
         int c = va_arg(arg, int);
         if(c != t->field_sep)
-          t->quote_char = c;
+          sv_set_quote_char(t, c);
       }
       break;
 
@@ -78,6 +78,12 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
         sv_line_callback cb = (sv_line_callback)va_arg(arg, void*);
         t->line_callback = cb;
       }
+      break;
+
+    case SV_OPTION_DOUBLE_QUOTE:
+      t->flags &= ~SV_FLAGS_DOUBLE_QUOTE;
+      if(va_arg(arg, long))
+        t->flags |= SV_FLAGS_DOUBLE_QUOTE;
       break;
 
     default:
