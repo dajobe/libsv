@@ -60,7 +60,10 @@ struct sv_s {
    * array above 'fields' points into this
    */
   char* fields_buffer;
+  /* allocate size */
   size_t fields_buffer_size;
+  /* used size */
+  size_t fields_buffer_len;
 
   /* first row is saved as headers */
   char **headers;
@@ -81,11 +84,14 @@ struct sv_s {
   sv_line_callback line_callback;
 };
 
-void sv_internal_parse_reset(sv* t);
-
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);
 
 /* sv.c */
 void sv_set_quote_char(sv *t, char quote_char);
+
+/* common-parse.c */
+sv_status_t sv_init_fields(sv *t, int nfields);
+void sv_internal_parse_reset(sv* t);
+sv_status_t sv_ensure_fields_buffer_size(sv *t, size_t len);
 
 #endif
