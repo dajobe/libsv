@@ -34,6 +34,36 @@
 /* double a quote to quote it (primarily for ") */
 #define SV_FLAGS_DOUBLE_QUOTE      (1<<4)
 
+#ifdef SV_PARSE_V2
+typedef enum  {
+  SV_STATE_UNKNOWN,
+  /* After a reset and before any potential BOM */
+  SV_STATE_START_FILE,
+  /* After any BOM and expecting record start */
+  SV_STATE_START_ROW,
+  /* Accepted \r or \n - new line; handle \r\n as 1 EOL */
+  SV_STATE_EOL,
+  /* Escaped newline */
+  SV_STATE_ESC_EOL,
+  /* Accepted # - read a commented row up to EOL */
+  SV_STATE_COMMENT,
+  /* Starting a cell */
+  SV_STATE_START_CELL,
+  /* In a cell */
+  SV_STATE_IN_CELL,
+  /* Accepted escape-char in a cell */
+  SV_STATE_ESC_IN_CELL,
+  /* Accepted quote-char starting a cell */
+  SV_STATE_IN_QUOTED_CELL,
+  /* Accepted escape-char in a quoted cell */
+  SV_STATE_ESC_IN_QUOTED_CELL,
+  /* Accepted quote in a quoted cell */
+  SV_STATE_QUOTE_IN_QUOTED_CELL,
+  SV_STATE_LAST = SV_STATE_QUOTE_IN_QUOTED_CELL
+} sv_parse_state;
+#endif
+
+
 struct sv_s {
   /* field separator: '\t' or ',' */
   char field_sep;
@@ -45,12 +75,15 @@ struct sv_s {
   sv_fields_callback header_callback;
   sv_fields_callback data_callback;
 
+#ifdef SV_PARSE_V2
+#else
   /* current buffer */
   char *buffer;
   /* size allocated */
   size_t size;
   /* size used */
   size_t len;
+#endif
 
   unsigned int fields_count;
   char **fields;
@@ -76,12 +109,22 @@ struct sv_s {
 
   int bad_records;
 
+#ifdef SV_PARSE_V2
+#else
   char last_char;
+#endif
 
   char quote_char;
 
   /* called with the line (before parsing) */
   sv_line_callback line_callback;
+
+#ifdef SV_PARSE_V2
+  char escape_char;
+
+  sv_parse_state state;
+#else
+#endif
 };
 
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);

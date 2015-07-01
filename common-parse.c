@@ -51,6 +51,12 @@ sv_free_fields(sv *t)
     t->fields_widths = NULL;
   }
 
+  t->fields_count = 0;
+}
+
+static void
+sv_free_headers(sv *t)
+{
   if(t->headers) {
     unsigned int i;
 
@@ -64,38 +70,46 @@ sv_free_fields(sv *t)
     free(t->headers_widths);
     t->headers_widths = NULL;
   }
-
-  t->fields_count = 0;
 }
-
 
 /* Create or expand fields,widths,headers arrays to at least size nfields
  */
 sv_status_t
 sv_init_fields(sv *t, int nfields)
 {
+  char** cp;
+  size_t* sp;
+
   if(t->fields_count >= nfields)
     return SV_STATUS_OK;
 
-  if(t->fields_count < nfields)
-    /* free existing fields - it's too small */
-    sv_free_fields(t);
-  
-  t->fields = (char**)malloc(sizeof(char*) * (nfields + 1));
-  if(!t->fields)
+  cp = (char**)malloc(sizeof(char*) * (nfields + 1));;
+  if(!cp)
     goto failed;
+  if(t->fields_count > 0)
+    memcpy(cp, t->fields, sizeof(char*) * t->fields_count);
+  t->fields = cp;
 
-  t->fields_widths = (size_t*)malloc(sizeof(size_t) * (nfields + 1));
-  if(!t->fields_widths)
+  sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));;
+  if(!sp)
     goto failed;
+  if(t->fields_count > 0)
+    memcpy(sp, t->fields_widths, sizeof(size_t) * t->fields_count);
+  t->fields_widths = sp;
 
-  t->headers = (char**)malloc(sizeof(char*) * (nfields + 1));
-  if(!t->headers)
+  cp = (char**)malloc(sizeof(char*) * (nfields + 1));;
+  if(!cp)
     goto failed;
+  if(t->fields_count > 0)
+    memcpy(cp, t->headers, sizeof(char*) * t->fields_count);
+  t->headers = cp;
 
-  t->headers_widths = (size_t*)malloc(sizeof(size_t) * (nfields + 1));
-  if(!t->headers_widths)
+  sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));;
+  if(!sp)
     goto failed;
+  if(t->fields_count > 0)
+    memcpy(sp, t->headers_widths, sizeof(size_t) * t->fields_count);
+  t->headers_widths = sp;
 
   t->fields_count = nfields;
   return SV_STATUS_OK;
@@ -110,6 +124,7 @@ void
 sv_internal_parse_reset(sv* t)
 {
   sv_free_fields(t);
+  sv_free_headers(t);
 
   if(t->fields_buffer) {
     free(t->fields_buffer);
@@ -117,13 +132,16 @@ sv_internal_parse_reset(sv* t)
   }
   t->fields_buffer_size = 0;
   t->fields_buffer_len = 0;
+
+#ifdef SV_PARSE_V2
+#else
   if(t->buffer) {
     free(t->buffer);
     t->buffer = NULL;
   }
   t->size = 0;
   t->len = 0;
-
+#endif
   /* Set initial state */
   t->line = 1;
 
@@ -131,7 +149,12 @@ sv_internal_parse_reset(sv* t)
 
   t->bad_records = 0;
 
+#ifdef SV_PARSE_V2
+  t->escape_char = '\\';
+  t->state = SV_STATE_START_FILE;
+#else
   t->last_char = '\0';
+#endif
 }
 
 
@@ -147,7 +170,7 @@ sv_ensure_fields_buffer_size(sv *t, size_t len)
 
   nsize = (len + t->fields_buffer_len) << 1;
 
-#if defined(SV_DEBUG) && SV_DEBUG > 1
+#if defined(SV_DEBUG) && SV_DEBUG > 2
   fprintf(stderr, "%d: Growing buffer from %d to %d bytes\n",
           t->line, (int)t->fields_buffer_size, (int)nsize);
 #endif

@@ -1,4 +1,6 @@
-SVLIBSRCS=sv.c option.c write.c common-parse.c parse.c
+PARSE_V2=1
+
+SVLIBSRCS=sv.c option.c write.c common-parse.c
 SVLIBHDRS=sv.h sv_internal.h
 
 EXSRCS=example.c sv2c.c gen.c
@@ -32,6 +34,13 @@ TARBALL=$(PV).tar.gz
 
 LDFLAGS=-g
 CPPFLAGS=-g -I. -DHAVE_STDLIB_H -DHAVE_UNISTD_H -DHAVE_ERRNO_H -DSV_DEBUG=2
+
+ifdef PARSE_V2
+SVLIBSRCS += parse2.c
+CPPFLAGS += -DSV_PARSE_V2
+else
+SVLIBSRCS += parse.c
+endif
 
 SVLIBOBJS=$(SVLIBSRCS:.c=.o)
 
