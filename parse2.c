@@ -85,12 +85,6 @@ sv_parse_save_cell(sv* t)
   fprintf(stderr, "<< (%d)\n", cell_len);
 #endif
 
-  if(t->line == 1 && (t->flags & SV_FLAGS_SAVE_HEADER)) {
-    /* first line and header: turn fields into headers */
-    t->headers[cell_ix] = s;
-    t->headers_widths[cell_ix] = cell_len;
-  }
-
   t->fields_buffer_len = 0;
 
   return SV_STATUS_OK;
@@ -140,6 +134,28 @@ sv_parse_generate_row(sv *t)
 #if defined(SV_DEBUG) && SV_DEBUG > 2
   fprintf(stderr, "Generating row %d\n", t->line);
 #endif
+
+  if(t->line == 1 && (t->flags & SV_FLAGS_SAVE_HEADER)) {
+    int nfields = t->fields_count;
+    char** cp;
+    size_t* sp;
+
+    /* first line and header: turn fields into headers */
+    cp = (char**)malloc(sizeof(char*) * (nfields + 1));
+    if(!cp)
+      return SV_STATUS_NO_MEMORY;
+    t->headers = cp;
+
+    sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));
+    if(!sp)
+      return SV_STATUS_NO_MEMORY;
+    t->headers_widths = sp;
+
+    if(nfields > 0) {
+      memcpy(cp, t->fields, sizeof(char*) * nfields + 1);
+      memcpy(sp, t->fields_widths, sizeof(size_t) * nfields + 1);
+    }
+  }
 
   if(t->line_callback) {
     status = t->line_callback(t, t->callback_user_data, "fake line", 9);

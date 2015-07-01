@@ -83,33 +83,19 @@ sv_init_fields(sv *t, int nfields)
   if(t->fields_count >= nfields)
     return SV_STATUS_OK;
 
-  cp = (char**)malloc(sizeof(char*) * (nfields + 1));;
+  cp = (char**)malloc(sizeof(char*) * (nfields + 1));
   if(!cp)
     goto failed;
   if(t->fields_count > 0)
     memcpy(cp, t->fields, sizeof(char*) * t->fields_count);
   t->fields = cp;
 
-  sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));;
+  sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));
   if(!sp)
     goto failed;
   if(t->fields_count > 0)
     memcpy(sp, t->fields_widths, sizeof(size_t) * t->fields_count);
   t->fields_widths = sp;
-
-  cp = (char**)malloc(sizeof(char*) * (nfields + 1));;
-  if(!cp)
-    goto failed;
-  if(t->fields_count > 0)
-    memcpy(cp, t->headers, sizeof(char*) * t->fields_count);
-  t->headers = cp;
-
-  sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));;
-  if(!sp)
-    goto failed;
-  if(t->fields_count > 0)
-    memcpy(sp, t->headers_widths, sizeof(size_t) * t->fields_count);
-  t->headers_widths = sp;
 
   t->fields_count = nfields;
   return SV_STATUS_OK;
