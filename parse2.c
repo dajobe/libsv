@@ -270,7 +270,7 @@ sv_internal_parse_process_char(sv *t, char c)
       } else if(c == t->escape_char) {
         t->state = SV_STATE_ESC_IN_CELL;
       } else if((c == ' ' || c == '\t') &&
-                (t->flags & SV_OPTION_STRIP_WHITESPACE))
+                (t->flags & SV_FLAGS_STRIP_WHITESPACE))
         /* ignore whitespace at start of cell */
         ;
       else if(c == t->field_sep) {
@@ -346,7 +346,7 @@ sv_internal_parse_process_char(sv *t, char c)
       else if(c == t->escape_char) {
         t->state = SV_STATE_ESC_IN_QUOTED_CELL;
       } else if(c == t->quote_char) {
-        if(t->flags & SV_OPTION_DOUBLE_QUOTE)
+        if(t->flags & SV_FLAGS_DOUBLE_QUOTE)
           t->state = SV_STATE_QUOTE_IN_QUOTED_CELL;
         else
           t->state = SV_STATE_IN_CELL;
