@@ -136,25 +136,32 @@ sv_parse_generate_row(sv *t)
 #endif
 
   if(t->line == 1 && (t->flags & SV_FLAGS_SAVE_HEADER)) {
-    int nfields = t->fields_count;
+    int nheaders = t->fields_count;
     char** cp;
     size_t* sp;
+    int i;
 
     /* first line and header: turn fields into headers */
-    cp = (char**)malloc(sizeof(char*) * (nfields + 1));
+    cp = (char**)malloc(sizeof(char*) * (nheaders + 1));
     if(!cp)
       return SV_STATUS_NO_MEMORY;
     t->headers = cp;
 
-    sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));
+    sp = (size_t*)malloc(sizeof(size_t) * (nheaders + 1));
     if(!sp)
       return SV_STATUS_NO_MEMORY;
     t->headers_widths = sp;
 
-    if(nfields > 0) {
-      memcpy(cp, t->fields, sizeof(char*) * nfields + 1);
-      memcpy(sp, t->fields_widths, sizeof(size_t) * nfields + 1);
+    for(i = 0; i < nheaders; i++) {
+      int header_width = t->fields_widths[i];
+      t->headers[i] = (char*)malloc(header_width + 1);
+      if(!t->headers[i])
+        return SV_STATUS_NO_MEMORY;
+
+      memcpy(t->headers[i], t->fields[i], header_width + 1);
+      t->headers_widths[i] = header_width;
     }
+    t->headers_count = nheaders;
   }
 
   if(t->line_callback) {
@@ -167,7 +174,7 @@ sv_parse_generate_row(sv *t)
     if(t->header_callback) {
       /* got header fields - return them to user */
       status = t->header_callback(t, t->callback_user_data, t->headers,
-                                  t->headers_widths, t->fields_count);
+                                  t->headers_widths, t->headers_count);
     }
   } else {
     /* data */

@@ -99,6 +99,7 @@ struct sv_s {
   size_t fields_buffer_len;
 
   /* first row is saved as headers */
+  unsigned int headers_count;
   char **headers;
   size_t *headers_widths;
 

@@ -142,7 +142,7 @@ sv_get_line(sv *t)
 const char*
 sv_get_header(sv *t, unsigned int i, size_t *width_p)
 {
-  if(!t || !t->headers || i > t->fields_count)
+  if(!t || !t->headers || i > t->headers_count)
     return NULL;
 
   if(width_p)

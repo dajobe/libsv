@@ -60,7 +60,7 @@ sv_free_headers(sv *t)
   if(t->headers) {
     unsigned int i;
 
-    for(i = 0; i < t->fields_count; i++)
+    for(i = 0; i < t->headers_count; i++)
       free(t->headers[i]);
     free(t->headers);
     t->headers = NULL;
