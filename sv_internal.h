@@ -119,20 +119,11 @@ struct sv_s {
 
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);
 
-/* sv.c */
-void sv_set_quote_char(sv *t, char quote_char);
-
-/* common-parse.c */
-sv_status_t sv_init_fields(sv *t, int nfields);
-void sv_free_fields(sv *t);
-void sv_reset_line_buffer(sv *t);
-void sv_free_line_buffer(sv *t);
+/* read.c */
 void sv_internal_parse_reset(sv* t);
-sv_status_t sv_ensure_fields_buffer_size(sv *t, size_t len);
-sv_status_t sv_ensure_line_buffer_size(sv *t, size_t len);
-sv_status_t sv_line_buffer_add_char(sv* t, char c);
+void sv_internal_free_line_buffer(sv *t);
 
 /* sv.c */
-void sv_set_quote_char(sv *t, char quote_char);
+void sv_internal_set_quote_char(sv *t, char quote_char);
 
 #endif

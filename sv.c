@@ -69,7 +69,7 @@ sv_new(void *user_data, sv_fields_callback header_callback,
 
   /* default flags */
   t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
-  sv_set_quote_char(t, '"');
+  sv_internal_set_quote_char(t, '"');
 
   sv_reset(t);
 
@@ -105,7 +105,7 @@ sv_free(sv *t)
     return;
 
   sv_internal_parse_reset(t);
-  sv_free_line_buffer(t);
+  sv_internal_free_line_buffer(t);
 
   free(t);
 }
@@ -175,7 +175,7 @@ sv_parse_chunk(sv *t, char *buffer, size_t len)
  * INTERNAL - set quote char and update any flags
  */
 void
-sv_set_quote_char(sv *t, char quote_char)
+sv_internal_set_quote_char(sv *t, char quote_char)
 {
   t->flags &= ~SV_FLAGS_DOUBLE_QUOTE;
   t->quote_char = quote_char;

@@ -69,7 +69,7 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       if(1) {
         int c = va_arg(arg, int);
         if(c != t->field_sep)
-          sv_set_quote_char(t, c);
+          sv_internal_set_quote_char(t, c);
       }
       break;
 

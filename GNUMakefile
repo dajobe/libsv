@@ -4,7 +4,7 @@
 DEBUG_FLAGS=-g3
 #DEBUG_FLAGS=-g3 -DSV_DEBUG=3
 
-SVLIBSRCS=sv.c option.c write.c common-parse.c parse2.c
+SVLIBSRCS=sv.c option.c write.c read.c
 SVLIBHDRS=sv.h sv_internal.h
 
 EXSRCS=example.c sv2c.c gen.c
