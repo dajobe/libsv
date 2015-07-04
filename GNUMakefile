@@ -1,12 +1,10 @@
-PARSE_V2=1
-
 #CC=clang
 #SAN_FLAGS=-fsanitize=address -O1 -fno-omit-frame-pointer
 
 DEBUG_FLAGS=-g3
 #DEBUG_FLAGS=-g3 -DSV_DEBUG=3
 
-SVLIBSRCS=sv.c option.c write.c common-parse.c
+SVLIBSRCS=sv.c option.c write.c common-parse.c parse2.c
 SVLIBHDRS=sv.h sv_internal.h
 
 EXSRCS=example.c sv2c.c gen.c
@@ -41,13 +39,6 @@ TARBALL=$(PV).tar.gz
 LDFLAGS=$(DEBUG_FLAGS) $(SAN_FLAGS)
 CPPFLAGS=$(DEBUG_FLAGS) -I. -DHAVE_STDLIB_H -DHAVE_UNISTD_H -DHAVE_ERRNO_H
 CFLAGS=$(SAN_FLAGS)
-
-ifdef PARSE_V2
-SVLIBSRCS += parse2.c
-CPPFLAGS += -DSV_PARSE_V2
-else
-SVLIBSRCS += parse.c
-endif
 
 SVLIBOBJS=$(SVLIBSRCS:.c=.o)
 

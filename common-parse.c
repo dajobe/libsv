@@ -128,15 +128,6 @@ sv_internal_parse_reset(sv* t)
   t->fields_buffer_size = 0;
   t->fields_buffer_len = 0;
 
-#ifdef SV_PARSE_V2
-#else
-  if(t->buffer) {
-    free(t->buffer);
-    t->buffer = NULL;
-  }
-  t->size = 0;
-  t->len = 0;
-#endif
   /* Set initial state */
   t->line = 1;
 
@@ -144,12 +135,8 @@ sv_internal_parse_reset(sv* t)
 
   t->bad_records = 0;
 
-#ifdef SV_PARSE_V2
   t->escape_char = '\0';
   t->state = SV_STATE_START_FILE;
-#else
-  t->last_char = '\0';
-#endif
 }
 
 
