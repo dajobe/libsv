@@ -74,7 +74,7 @@ typedef struct
 } svtest_context;
 
 
-#define N_TESTS 35
+#define N_TESTS 36
 static const char* const expected_0[4] = {"a", "b", "1", "2" };
 static const char* const expected_1[4] = {"c", "d", "3", "4" };
 static const char* const expected_2[4] = {"e", "f", "5", "6" };
@@ -112,6 +112,7 @@ static const char* const expected_26[2] = {"a", "new\r\nline" };
 static const char* const expected_27[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
 static const char* const expected_28[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
 static const char* const expected_29[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char* const expected_30[8] = {"a", "b", "c", "d", "col 1.1", "col 1.2\\", "col 1.3\\", "col\n1.4" };
 
 
 static const svtest_data_set svtest_data[N_TESTS + 1] = {
@@ -165,6 +166,9 @@ static const svtest_data_set svtest_data[N_TESTS + 1] = {
   /* DOS newlines */
   { ',', 0, "a,b,c\r\n1,2,3\r\n4,5,\"6\"\r\n7,8,9", (const char** const)expected_29, 3, 3 },
 
+  /* \ is not a special character by default */
+  { ',', 0, "a,b,c,d\ncol 1.1,col 1.2\\,\"col 1.3\\\",\"col\n1.4\"", (const char** const)expected_30, 4, 1 },
+  
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
 

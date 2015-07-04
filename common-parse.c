@@ -145,7 +145,7 @@ sv_internal_parse_reset(sv* t)
   t->bad_records = 0;
 
 #ifdef SV_PARSE_V2
-  t->escape_char = '\\';
+  t->escape_char = '\0';
   t->state = SV_STATE_START_FILE;
 #else
   t->last_char = '\0';

@@ -274,7 +274,7 @@ sv_internal_parse_process_char(sv *t, char c)
         t->state = (!c ? SV_STATE_START_ROW : SV_STATE_EOL);
       } else if(c == t->quote_char) {
         t->state = SV_STATE_IN_QUOTED_CELL;
-      } else if(c == t->escape_char) {
+      } else if(t->escape_char && c == t->escape_char) {
         t->state = SV_STATE_ESC_IN_CELL;
       } else if((c == ' ' || c == '\t') &&
                 (t->flags & SV_FLAGS_STRIP_WHITESPACE))
@@ -331,7 +331,7 @@ sv_internal_parse_process_char(sv *t, char c)
 
         sv_parse_generate_row(t);
         t->state = (!c ? SV_STATE_START_ROW : SV_STATE_EOL);
-      } else if(c == t->escape_char) {
+      } else if(t->escape_char && c == t->escape_char) {
         t->state = SV_STATE_ESC_IN_CELL;
       } else if(c == t->field_sep) {
         status = sv_parse_save_cell(t);
@@ -350,7 +350,7 @@ sv_internal_parse_process_char(sv *t, char c)
       if(!c)
         /* end of input */
         ;
-      else if(c == t->escape_char) {
+      else if(t->escape_char && c == t->escape_char) {
         t->state = SV_STATE_ESC_IN_QUOTED_CELL;
       } else if(c == t->quote_char) {
         if(t->flags & SV_FLAGS_DOUBLE_QUOTE)
