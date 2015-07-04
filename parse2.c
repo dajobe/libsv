@@ -73,7 +73,7 @@ sv_parse_save_cell(sv* t)
       cell_len--;
     memcpy(s, f, cell_len);
   } else
-    memcpy(s, t->fields_buffer, cell_len + 1);
+    memcpy(s, t->fields_buffer, cell_len);
   s[cell_len] = '\0';
 
   t->fields[cell_ix] = s;
@@ -186,7 +186,7 @@ sv_parse_generate_row(sv *t)
     }
   }
 
-  t->fields_count = 0;
+  sv_free_fields(t);
 
   t->line++;
 

@@ -38,10 +38,15 @@
 /* Free fields, field_widths, headers and header_widths all based on
  * number of fields
  */
-static void
+void
 sv_free_fields(sv *t)
 {
   if(t->fields) {
+    unsigned int i;
+
+    for(i = 0; i < t->fields_count; i++)
+      free(t->fields[i]);
+
     free(t->fields);
     t->fields = NULL;
   }
@@ -86,15 +91,19 @@ sv_init_fields(sv *t, int nfields)
   cp = (char**)malloc(sizeof(char*) * (nfields + 1));
   if(!cp)
     goto failed;
-  if(t->fields_count > 0)
+  if(t->fields_count > 0) {
     memcpy(cp, t->fields, sizeof(char*) * t->fields_count);
+    free(t->fields);
+  }
   t->fields = cp;
 
   sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));
   if(!sp)
     goto failed;
-  if(t->fields_count > 0)
+  if(t->fields_count > 0) {
     memcpy(sp, t->fields_widths, sizeof(size_t) * t->fields_count);
+    free(t->fields_widths);
+  }
   t->fields_widths = sp;
 
   t->fields_count = nfields;
@@ -165,12 +174,11 @@ sv_ensure_fields_buffer_size(sv *t, size_t len)
   if(!nbuffer)
     return SV_STATUS_NO_MEMORY;
 
-  if(t->fields_buffer_size)
+  if(t->fields_buffer_size) {
     memcpy(nbuffer, t->fields_buffer, t->fields_buffer_len);
-  nbuffer[t->fields_buffer_len] = '\0';
-
-  if(t->fields_buffer)
     free(t->fields_buffer);
+  }
+  nbuffer[t->fields_buffer_len] = '\0';
 
   t->fields_buffer = nbuffer;
   t->fields_buffer_size = nsize;
