@@ -1,0 +1,69 @@
+# Todos #
+
+* Unicode encodings
+* Handle Nulls: allow at least ,, and ,"", and ,\N, for nulls in CSV
+* comments prefix string e.g. "#" (numpy `comments` defaults to "#";
+  `comments prefix` TDM)
+* skip initial rows count (numpy `skip_headers` default None; `skip rows` TDM)
+* skip/select initial columns (numpy `usecols`; `skip columns` TDM)
+* convert fields to lower or upper case
+* warn on invalid number of cells in row compared to #headers
+* set the string that represents missing values (numpy `missing_values`)
+* field size limit (ruby `field_size_limit`)
+* set headers as parameter (ruby `headers` with array): implies no
+  header line
+* skip lines regex (ruby `skip_lines` example is for comments '^#')
+* flag for empty line decision: an EOF, single empty field or no field?
+* allow ';' seps like ',' but for regions where , is in numbers (Excel in NO)
+* ASCII delimited separators ASCII 28-31: 31 field sep, 30 record sep
+
+# Specifications #
+
+* [Model for Tabular Data and Metadata on the Web][1][8]
+  from the W3C [CSV on the Web Working Group][2]
+* [ASCII delimited text][3]
+* [Delimiter separated values][4]
+* [Comma-separated values][5]
+* [Data Protocols Tabular data package][6]
+* [CSV dialect description format CSVDDF][7]
+* 
+
+# Articles and discussions #
+
+* https://news.ycombinator.com/item?id=7795451
+* https://news.ycombinator.com/item?id=7796268
+* http://tburette.github.io/blog/2014/05/25/so-you-want-to-write-your-own-CSV-code/
+* https://ronaldduncan.wordpress.com/2009/10/31/text-file-formats-ascii-delimited-text-not-csv-or-tab-delimited-text/
+
+# Other implementations #
+
+* Python core: https://github.com/python/cpython/blob/master/Modules/_csv.c
+* Python numpy: http://docs.scipy.org/doc/numpy/user/basics.io.genfromtxt.html
+  https://github.com/numpy/numpy/blob/master/numpy/lib/npyio.py#L1257
+* Ruby: https://github.com/ruby/ruby/blob/trunk/lib/csv.rb
+* Perl: https://metacpan.org/pod/Text::CSV_XS
+  https://github.com/Tux/Text-CSV_XS
+  https://github.com/Tux/Text-CSV_XS/blob/master/CSV_XS.xs
+* Javascript: https://github.com/mholt/PapaParse.git
+  https://github.com/knrz/CSV.js.git
+  https://github.com/d3/d3-dsv
+  https://github.com/mafintosh/csv-parser
+  https://github.com/koles/ya-csv.git
+
+# Test suites #
+
+* https://github.com/maxogden/csv-spectrum
+
+# Large datasets #
+
+* http://storage.googleapis.com/books/ngrams/books/datasetsv2.html
+
+
+[1]: http://www.w3.org/TR/tabular-data-model/
+[2]: http://www.w3.org/2013/csvw/wiki/Main_Page
+[3]: https://en.wikipedia.org/wiki/Delimiter#ASCII_delimited_text
+[4]: https://en.wikipedia.org/wiki/Delimiter-separated_values
+[5]: https://en.wikipedia.org/wiki/Comma-separated_values
+[6]: http://dataprotocols.org/tabular-data-package/#csv-files
+[7]: http://dataprotocols.org/csv-dialect/
+[8]: http://www.w3.org/TR/tabular-metadata/
