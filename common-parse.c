@@ -115,6 +115,24 @@ sv_init_fields(sv *t, int nfields)
 }
 
 
+
+void
+sv_reset_line_buffer(sv *t)
+{
+  t->len = 0;
+}
+
+
+void
+sv_free_line_buffer(sv *t)
+{
+  if(t->buffer) {
+    free(t->buffer);
+    t->buffer = NULL;
+  }
+}
+
+
 void
 sv_internal_parse_reset(sv* t)
 {
@@ -127,6 +145,8 @@ sv_internal_parse_reset(sv* t)
   }
   t->fields_buffer_size = 0;
   t->fields_buffer_len = 0;
+
+  sv_reset_line_buffer(t);
 
   /* Set initial state */
   t->line = 1;
@@ -172,3 +192,78 @@ sv_ensure_fields_buffer_size(sv *t, size_t len)
 
   return SV_STATUS_OK;
 }
+
+
+/* Ensure line buffer is big enough for len more bytes */
+sv_status_t
+sv_ensure_line_buffer_size(sv *t, size_t len)
+{
+  char *nbuffer;
+  size_t nsize;
+
+  if(t->len + len < t->size)
+    return SV_STATUS_OK;
+
+  nsize = (len + t->len) << 1;
+
+  nbuffer = (char*)malloc(nsize + 1);
+  if(!nbuffer)
+    return SV_STATUS_NO_MEMORY;
+
+  if(t->len)
+    memcpy(nbuffer, t->buffer, t->len);
+  nbuffer[t->len] = '\0';
+
+  if(t->buffer)
+    free(t->buffer);
+
+  t->buffer = nbuffer;
+  t->size = nsize;
+
+  return SV_STATUS_OK;
+}
+
+
+#if defined(SV_DEBUG) && SV_DEBUG > 1
+static void
+sv_dump_buffer(FILE* fh, const char* label, const char* buffer, size_t len)
+{
+  size_t mylen=len;
+
+  fprintf(fh, "%s (%zu bytes) >>>", label, len);
+  if(mylen > 100)
+    mylen = 100;
+  fwrite(buffer, 1, mylen, fh);
+  if(mylen != len)
+    fputs("...", fh);
+  fputs("<<<\n", fh);
+}
+#endif
+
+/**
+ * sv_line_buffer_add_char:
+ * @t: sv object
+ * @c: char
+ *
+ * INTERNAL - Add char c to line buffer
+ *
+ * Return value: non-0 on failure
+ */
+sv_status_t
+sv_line_buffer_add_char(sv* t, char c)
+{
+  sv_status_t status;
+  size_t llen = t->len;
+
+  status = sv_ensure_line_buffer_size(t, t->len + 1);
+  if(status)
+    return status;
+
+  t->buffer[llen++] = c;
+  t->buffer[llen] = '\0';
+  t->len = llen;
+
+  return SV_STATUS_OK;
+}
+
+

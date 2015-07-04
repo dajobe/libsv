@@ -104,7 +104,8 @@ sv_free(sv *t)
   if(!t)
     return;
 
-  sv_reset(t);
+  sv_internal_parse_reset(t);
+  sv_free_line_buffer(t);
 
   free(t);
 }

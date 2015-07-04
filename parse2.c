@@ -165,7 +165,8 @@ sv_parse_generate_row(sv *t)
   }
 
   if(t->line_callback) {
-    status = t->line_callback(t, t->callback_user_data, "fake line", 9);
+    status = t->line_callback(t, t->callback_user_data,
+                              t->buffer, t->len);
     if(status != SV_STATUS_OK)
       return status;
   }
@@ -187,6 +188,7 @@ sv_parse_generate_row(sv *t)
   }
 
   sv_free_fields(t);
+  sv_reset_line_buffer(t);
 
   t->line++;
 
@@ -240,6 +242,9 @@ sv_internal_parse_process_char(sv *t, char c)
       fprintf(stderr, "State <%s> (%d) with char 0x%02X\n",
               sv_get_state_label((int)t->state), (int)t->state, c);
 #endif
+
+  if(c)
+    sv_line_buffer_add_char(t, c);
 
   redo:
   switch(t->state) {

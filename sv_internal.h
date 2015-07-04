@@ -73,6 +73,13 @@ struct sv_s {
   sv_fields_callback header_callback;
   sv_fields_callback data_callback;
 
+  /* line buffer */
+  char *buffer;
+  /* size allocated */
+  size_t size;
+  /* size used */
+  size_t len;
+
   unsigned int fields_count;
   char **fields;
   size_t *fields_widths;
@@ -116,8 +123,12 @@ void sv_set_quote_char(sv *t, char quote_char);
 /* common-parse.c */
 sv_status_t sv_init_fields(sv *t, int nfields);
 void sv_free_fields(sv *t);
+void sv_reset_line_buffer(sv *t);
+void sv_free_line_buffer(sv *t);
 void sv_internal_parse_reset(sv* t);
 sv_status_t sv_ensure_fields_buffer_size(sv *t, size_t len);
+sv_status_t sv_ensure_line_buffer_size(sv *t, size_t len);
+sv_status_t sv_line_buffer_add_char(sv* t, char c);
 
 /* sv.c */
 void sv_set_quote_char(sv *t, char quote_char);
