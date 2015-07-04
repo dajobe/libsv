@@ -272,7 +272,7 @@ sv_internal_parse_process_char(sv *t, char c)
 
         sv_parse_generate_row(t);
         t->state = (!c ? SV_STATE_START_ROW : SV_STATE_EOL);
-      } else if(c == t->quote_char) {
+      } else if(t->quote_char && c == t->quote_char) {
         t->state = SV_STATE_IN_QUOTED_CELL;
       } else if(t->escape_char && c == t->escape_char) {
         t->state = SV_STATE_ESC_IN_CELL;
@@ -352,7 +352,7 @@ sv_internal_parse_process_char(sv *t, char c)
         ;
       else if(t->escape_char && c == t->escape_char) {
         t->state = SV_STATE_ESC_IN_QUOTED_CELL;
-      } else if(c == t->quote_char) {
+      } else if(t->quote_char && c == t->quote_char) {
         if(t->flags & SV_FLAGS_DOUBLE_QUOTE)
           t->state = SV_STATE_QUOTE_IN_QUOTED_CELL;
         else
@@ -377,7 +377,7 @@ sv_internal_parse_process_char(sv *t, char c)
 
     case SV_STATE_QUOTE_IN_QUOTED_CELL:
       /* after a quote char in an quoted cell */
-      if(c == t->quote_char) {
+      if(t->quote_char && c == t->quote_char) {
         /* <quote><quote> so write just 1 */
         status = sv_parse_cell_add_char(t, c);
         if(status)
