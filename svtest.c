@@ -74,7 +74,7 @@ typedef struct
 } svtest_context;
 
 
-#define N_TESTS 21
+#define N_TESTS 24
 static const char* const expected_0[4] = {"a", "b", "1", "2" };
 static const char* const expected_1[4] = {"c", "d", "3", "4" };
 static const char* const expected_2[4] = {"e", "f", "5", "6" };
@@ -96,6 +96,9 @@ static const char* const expected_14[6] = {"a", "b", "c", "quoting", "can \"be\"
 static const char* const expected_15[15] = {"a", "b", "c", "d", "e",
    "x","\"x\"","","x\nx","x",
    "y","","","","123" };
+static const char* const expected_16[8] = {"a", "b", "c", "d", "1", "2", "3,4"};
+static const char* const expected_17[8] = {"a", "b", "c", "d", "1", "2", "\"3,4\""};
+static const char* const expected_18[8] = {"a", "b", "c", "d", "1", "2", "3\n4"};
 
 static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',',  0, "a,b\n",        (const char** const)expected_0, 2, 0 },
@@ -122,6 +125,10 @@ static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',',  0, "a,b,c\nquoting,\"can \"\"be\"\"\",fun\n\"\n", (const char** const)expected_14, 3, 1 },
   /* https://news.ycombinator.com/item?id=7795451 */
   { ',', 0, "a,b,c,d,e\n\"x\",\"\"\"x\"\"\",,\"x\nx\",\"x\"\n\"y\",,,,123\n", (const char** const)expected_15, 5, 2 },
+  /* inspired by https://github.com/knrz/CSV.js/blob/master/test.js */
+  { ',', 0, "a,b,c,d\n1,2,\"3,4\"", (const char** const)expected_16, 4, 1 },
+  { ',', 0, "a,b,c,d\n1,2,\"\"\"3,4\"\"\"", (const char** const)expected_17, 4, 1 },
+  { ',', 0, "a,b,c,d\n1,2,\"3\n4\"", (const char** const)expected_18, 4, 1 },
 
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
