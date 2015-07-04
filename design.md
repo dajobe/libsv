@@ -85,7 +85,7 @@ typedef struct {
   unsigned int contains_leading_ws:1;
   unsigned int contains_trailing_ws:1;
   /* if the delimiter is ws, will be same as @contains_delimiter */
-  unsigned int contains_contains_ws:1;
+  unsigned int contains_ws:1;
   /* eol content flag */
   unsigned int contains_eol:1; /* \r or \n */
 } sv_cell;

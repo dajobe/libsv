@@ -69,7 +69,7 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       if(1) {
         int c = va_arg(arg, int);
         if(c != t->field_sep)
-          sv_set_quote_char(t, c);
+          sv_internal_set_quote_char(t, c);
       }
       break;
 
@@ -84,6 +84,20 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       t->flags &= ~SV_FLAGS_DOUBLE_QUOTE;
       if(va_arg(arg, long))
         t->flags |= SV_FLAGS_DOUBLE_QUOTE;
+      break;
+
+    case SV_OPTION_ESCAPE_CHAR:
+      if(1) {
+        int c = va_arg(arg, int);
+        t->escape_char = c;
+      }
+      break;
+
+    case SV_OPTION_COMMENT_CHAR:
+      if(1) {
+        int c = va_arg(arg, int);
+        t->comment_char = c;
+      }
       break;
 
     default:

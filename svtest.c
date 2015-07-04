@@ -74,7 +74,7 @@ typedef struct
 } svtest_context;
 
 
-#define N_TESTS 20
+#define N_TESTS 37
 static const char* const expected_0[4] = {"a", "b", "1", "2" };
 static const char* const expected_1[4] = {"c", "d", "3", "4" };
 static const char* const expected_2[4] = {"e", "f", "5", "6" };
@@ -92,6 +92,29 @@ static const char* const expected_11[6] = {"a", "b", "c", "\"", "\"", "\"" };
 static const char* const expected_12[6] = {"a", "b", "c", "\"\"", "\"\"", "\"\"" };
 static const char* const expected_13[6] = {"a", "b", "c", "\"\"\"", "\"\"\"", "\"\"\"" };
 static const char* const expected_14[6] = {"a", "b", "c", "quoting", "can \"be\"", "fun" };
+/* https://news.ycombinator.com/item?id=7795451 */
+static const char* const expected_15[15] = {"a", "b", "c", "d", "e",
+   "x","\"x\"","","x\nx","x",
+   "y","","","","123" };
+/* inspired by https://github.com/knrz/CSV.js/blob/master/test.js */
+static const char* const expected_16[8] = {"a", "b", "c", "d", "1", "2", "3,4"};
+static const char* const expected_17[8] = {"a", "b", "c", "d", "1", "2", "\"3,4\""};
+static const char* const expected_18[8] = {"a", "b", "c", "d", "1", "2", "3\n4"};
+/* inspired by https://github.com/d3/d3-dsv/blob/master/test/csv-test.js */
+static const char* const expected_19[6] = {"a", "b", "c",  "1",  "2", "3" };
+static const char* const expected_20[6] = {"a", "b", "c", " 1", " 2", "3" };
+static const char* const expected_21[6] = {"a", "b", "c",  "1",  "2", "3" };
+static const char* const expected_22[6] = {"a", "b", "c",  "1",  "2", "3" };
+static const char* const expected_23[2] = {"a", "\"hello\"" };
+static const char* const expected_24[2] = {"a", "new\nline" };
+static const char* const expected_25[2] = {"a", "new\rline" };
+static const char* const expected_26[2] = {"a", "new\r\nline" };
+static const char* const expected_27[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char* const expected_28[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char* const expected_29[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char* const expected_30[8] = {"a", "b", "c", "d", "col 1.1", "col 1.2\\", "col 1.3\\", "col\n1.4" };
+static const char* const expected_31[6] = {"a", "b", "c", "cat", "sat", "mat" };
+
 
 static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',',  0, "a,b\n",        (const char** const)expected_0, 2, 0 },
@@ -116,6 +139,38 @@ static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',',  0, "a,b,c\n\"\"\"\"\"\",\"\"\"\"\"\",\"\"\"\"\"\"\n", (const char** const)expected_12, 3, 1 },
   { ',',  0, "a,b,c\n\"\"\"\"\"\"\"\",\"\"\"\"\"\"\"\",\"\"\"\"\"\"\"\"\n", (const char** const)expected_13, 3, 1 },
   { ',',  0, "a,b,c\nquoting,\"can \"\"be\"\"\",fun\n\"\n", (const char** const)expected_14, 3, 1 },
+  /* https://news.ycombinator.com/item?id=7795451 */
+  { ',', 0, "a,b,c,d,e\n\"x\",\"\"\"x\"\"\",,\"x\nx\",\"x\"\n\"y\",,,,123\n", (const char** const)expected_15, 5, 2 },
+  /* inspired by https://github.com/knrz/CSV.js/blob/master/test.js */
+  { ',', 0, "a,b,c,d\n1,2,\"3,4\"", (const char** const)expected_16, 4, 1 },
+  { ',', 0, "a,b,c,d\n1,2,\"\"\"3,4\"\"\"", (const char** const)expected_17, 4, 1 },
+  { ',', 0, "a,b,c,d\n1,2,\"3\n4\"", (const char** const)expected_18, 4, 1 },
+
+  /* Inspired by https://github.com/d3/d3-dsv/blob/master/test/csv-test.js */
+  /* returns the expected objects */
+  { ',', 0, "a,b,c\n1,2,3\n", (const char** const)expected_19, 3, 1 },
+  /* does not strip whitespace */
+  { ',', 0, "a,b,c\n 1, 2,3\n", (const char** const)expected_20, 3, 1 },
+  /* quoted values */
+  { ',', 0, "a,b,c\n\"1\",2,3", (const char** const)expected_21, 3, 1 },
+  { ',', 0, "a,b,c\n\"1\",2,3\n", (const char** const)expected_22, 3, 1 },
+  /* quoted values with quotes */
+  { ',', 0, "a\n\"\"\"hello\"\"\"", (const char** const)expected_23, 1, 1 },
+  /* quoted values with newlines */
+  { ',', 0, "a\n\"new\nline\"", (const char** const)expected_24, 1, 1 },
+  { ',', 0, "a\n\"new\rline\"", (const char** const)expected_25, 1, 1 },
+  { ',', 0, "a\n\"new\r\nline\"", (const char** const)expected_26, 1, 1 },
+  /* Unix newlines */
+  { ',', 0, "a,b,c\n1,2,3\n4,5,\"6\"\n7,8,9", (const char** const)expected_27, 3, 3 },
+  /* Mac newlines */
+  { ',', 0, "a,b,c\r1,2,3\r4,5,\"6\"\r7,8,9", (const char** const)expected_28, 3, 3 },
+  /* DOS newlines */
+  { ',', 0, "a,b,c\r\n1,2,3\r\n4,5,\"6\"\r\n7,8,9", (const char** const)expected_29, 3, 3 },
+
+  /* \ is not a special character by default */
+  { ',', 0, "a,b,c,d\ncol 1.1,col 1.2\\,\"col 1.3\\\",\"col\n1.4\"", (const char** const)expected_30, 4, 1 },
+
+  { ',', SV_OPTION_COMMENT_CHAR, "a,b,c\n#this is a comment\ncat,sat,mat\n", (const char** const)expected_31, 3, 1 },
 
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
@@ -227,8 +282,13 @@ svtest_run_test(unsigned int test_index)
 
   sv_set_option(t, SV_OPTION_LINE_CALLBACK, svtest_line_callback);
 
-  if(test->option != 0)
-    sv_set_option(t, (sv_option_t)test->option, 1L);
+  if(test->option != 0) {
+    sv_option_t opt = (sv_option_t)test->option;
+    if(opt == SV_OPTION_COMMENT_CHAR)
+      sv_set_option(t, (sv_option_t)test->option, '#');
+    else
+      sv_set_option(t, (sv_option_t)test->option, 1L);
+  }
 
   status = sv_parse_chunk(t, (char*)test->data, data_len);
   if(status != SV_STATUS_OK) {

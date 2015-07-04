@@ -34,6 +34,34 @@
 /* double a quote to quote it (primarily for ") */
 #define SV_FLAGS_DOUBLE_QUOTE      (1<<4)
 
+typedef enum  {
+  SV_STATE_UNKNOWN,
+  /* After a reset and before any potential BOM */
+  SV_STATE_START_FILE,
+  /* After any BOM and expecting record start */
+  SV_STATE_START_ROW,
+  /* Accepted \r or \n - new line; handle \r\n as 1 EOL */
+  SV_STATE_EOL,
+  /* Escaped newline */
+  SV_STATE_ESC_EOL,
+  /* Accepted # - read a commented row up to EOL */
+  SV_STATE_COMMENT,
+  /* Starting a cell */
+  SV_STATE_START_CELL,
+  /* In a cell */
+  SV_STATE_IN_CELL,
+  /* Accepted escape-char in a cell */
+  SV_STATE_ESC_IN_CELL,
+  /* Accepted quote-char starting a cell */
+  SV_STATE_IN_QUOTED_CELL,
+  /* Accepted escape-char in a quoted cell */
+  SV_STATE_ESC_IN_QUOTED_CELL,
+  /* Accepted quote in a quoted cell */
+  SV_STATE_QUOTE_IN_QUOTED_CELL,
+  SV_STATE_LAST = SV_STATE_QUOTE_IN_QUOTED_CELL
+} sv_parse_state;
+
+
 struct sv_s {
   /* field separator: '\t' or ',' */
   char field_sep;
@@ -45,7 +73,7 @@ struct sv_s {
   sv_fields_callback header_callback;
   sv_fields_callback data_callback;
 
-  /* current buffer */
+  /* line buffer */
   char *buffer;
   /* size allocated */
   size_t size;
@@ -60,9 +88,13 @@ struct sv_s {
    * array above 'fields' points into this
    */
   char* fields_buffer;
+  /* allocate size */
   size_t fields_buffer_size;
+  /* used size */
+  size_t fields_buffer_len;
 
   /* first row is saved as headers */
+  unsigned int headers_count;
   char **headers;
   size_t *headers_widths;
 
@@ -73,19 +105,25 @@ struct sv_s {
 
   int bad_records;
 
-  char last_char;
-
   char quote_char;
 
   /* called with the line (before parsing) */
   sv_line_callback line_callback;
-};
 
-void sv_internal_parse_reset(sv* t);
+  char escape_char;
+
+  sv_parse_state state;
+
+  char comment_char;
+};
 
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);
 
+/* read.c */
+void sv_internal_parse_reset(sv* t);
+void sv_internal_free_line_buffer(sv *t);
+
 /* sv.c */
-void sv_set_quote_char(sv *t, char quote_char);
+void sv_internal_set_quote_char(sv *t, char quote_char);
 
 #endif

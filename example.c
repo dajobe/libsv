@@ -121,13 +121,29 @@ main(int argc, char *argv[])
   myc c;
   size_t data_file_len;
   char sep = '\t'; /* default is TSV */
+  int option_save_header = 1; /* default is to expect a header line */
+  int usage =0;
 
   program = "example";
 
   memset(&c, '\0', sizeof(c));
 
-  if(argc != 2) {
-    fprintf(stderr, "USAGE: %s [SV FILE]\n", program);
+  if(argc < 1 || argc > 3) {
+    usage = 1;
+  } else if(argc == 3) {
+    if(!strcmp(argv[1], "-n"))
+      option_save_header = 0;
+    else {
+      fprintf(stderr, "%s: Unknown option %s\n", program, argv[1]);
+      usage = 1;
+    }
+    argv++;
+    argc--;
+  }
+
+  if(usage) {
+    fprintf(stderr, "USAGE: %s [OPTIONS] [SV FILE]\n", program);
+    fputs("-n: No header present\n", stderr);
     rc = 1;
     goto tidy;
   }
@@ -171,6 +187,7 @@ main(int argc, char *argv[])
     goto tidy;
   }
 
+  sv_set_option(t, SV_OPTION_SAVE_HEADER, option_save_header);
   sv_set_option(t, SV_OPTION_LINE_CALLBACK, my_sv_line_callback);
 
   while(!feof(fh)) {
