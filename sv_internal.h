@@ -113,6 +113,8 @@ struct sv_s {
   char escape_char;
 
   sv_parse_state state;
+
+  char comment_char;
 };
 
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);

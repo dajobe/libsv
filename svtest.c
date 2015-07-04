@@ -74,7 +74,7 @@ typedef struct
 } svtest_context;
 
 
-#define N_TESTS 36
+#define N_TESTS 37
 static const char* const expected_0[4] = {"a", "b", "1", "2" };
 static const char* const expected_1[4] = {"c", "d", "3", "4" };
 static const char* const expected_2[4] = {"e", "f", "5", "6" };
@@ -113,6 +113,7 @@ static const char* const expected_27[12] = {"a", "b", "c",  "1",  "2", "3", "4",
 static const char* const expected_28[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
 static const char* const expected_29[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
 static const char* const expected_30[8] = {"a", "b", "c", "d", "col 1.1", "col 1.2\\", "col 1.3\\", "col\n1.4" };
+static const char* const expected_31[6] = {"a", "b", "c", "cat", "sat", "mat" };
 
 
 static const svtest_data_set svtest_data[N_TESTS + 1] = {
@@ -168,7 +169,9 @@ static const svtest_data_set svtest_data[N_TESTS + 1] = {
 
   /* \ is not a special character by default */
   { ',', 0, "a,b,c,d\ncol 1.1,col 1.2\\,\"col 1.3\\\",\"col\n1.4\"", (const char** const)expected_30, 4, 1 },
-  
+
+  { ',', SV_OPTION_COMMENT_CHAR, "a,b,c\n#this is a comment\ncat,sat,mat\n", (const char** const)expected_31, 3, 1 },
+
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
 
@@ -279,8 +282,13 @@ svtest_run_test(unsigned int test_index)
 
   sv_set_option(t, SV_OPTION_LINE_CALLBACK, svtest_line_callback);
 
-  if(test->option != 0)
-    sv_set_option(t, (sv_option_t)test->option, 1L);
+  if(test->option != 0) {
+    sv_option_t opt = (sv_option_t)test->option;
+    if(opt == SV_OPTION_COMMENT_CHAR)
+      sv_set_option(t, (sv_option_t)test->option, '#');
+    else
+      sv_set_option(t, (sv_option_t)test->option, 1L);
+  }
 
   status = sv_parse_chunk(t, (char*)test->data, data_len);
   if(status != SV_STATUS_OK) {

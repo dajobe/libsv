@@ -259,7 +259,7 @@ sv_internal_parse_process_char(sv *t, char c)
       else if(c == '\n' || c == '\r') {
         t->state = SV_STATE_EOL;
         break;
-      } else if(c == '#') {
+      } else if(c == t->comment_char) {
         t->state = SV_STATE_COMMENT;
         break;
       }

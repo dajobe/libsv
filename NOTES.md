@@ -2,8 +2,6 @@
 
 * Unicode encodings
 * Handle Nulls: allow at least ,, and ,"", and ,\N, for nulls in CSV
-* comments prefix string e.g. "#" (numpy `comments` defaults to "#";
-  `comments prefix` TDM)
 * skip initial rows count (numpy `skip_headers` default None; `skip rows` TDM)
 * skip/select initial columns (numpy `usecols`; `skip columns` TDM)
 * convert fields to lower or upper case
