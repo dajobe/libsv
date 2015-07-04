@@ -253,7 +253,6 @@ sv_internal_parse_process_char(sv *t, char c)
       /* FIXME - add BOM checking for encoding */
       /* FALLTHROUGH */
 
-    gsr:
     case SV_STATE_START_ROW:
       if(!c)
         break;
