@@ -74,7 +74,7 @@ typedef struct
 } svtest_context;
 
 
-#define N_TESTS 24
+#define N_TESTS 35
 static const char* const expected_0[4] = {"a", "b", "1", "2" };
 static const char* const expected_1[4] = {"c", "d", "3", "4" };
 static const char* const expected_2[4] = {"e", "f", "5", "6" };
@@ -96,9 +96,23 @@ static const char* const expected_14[6] = {"a", "b", "c", "quoting", "can \"be\"
 static const char* const expected_15[15] = {"a", "b", "c", "d", "e",
    "x","\"x\"","","x\nx","x",
    "y","","","","123" };
+/* inspired by https://github.com/knrz/CSV.js/blob/master/test.js */
 static const char* const expected_16[8] = {"a", "b", "c", "d", "1", "2", "3,4"};
 static const char* const expected_17[8] = {"a", "b", "c", "d", "1", "2", "\"3,4\""};
 static const char* const expected_18[8] = {"a", "b", "c", "d", "1", "2", "3\n4"};
+/* inspired by https://github.com/d3/d3-dsv/blob/master/test/csv-test.js */
+static const char* const expected_19[6] = {"a", "b", "c",  "1",  "2", "3" };
+static const char* const expected_20[6] = {"a", "b", "c", " 1", " 2", "3" };
+static const char* const expected_21[6] = {"a", "b", "c",  "1",  "2", "3" };
+static const char* const expected_22[6] = {"a", "b", "c",  "1",  "2", "3" };
+static const char* const expected_23[2] = {"a", "\"hello\"" };
+static const char* const expected_24[2] = {"a", "new\nline" };
+static const char* const expected_25[2] = {"a", "new\rline" };
+static const char* const expected_26[2] = {"a", "new\r\nline" };
+static const char* const expected_27[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char* const expected_28[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char* const expected_29[12] = {"a", "b", "c",  "1",  "2", "3", "4", "5", "6", "7", "8", "9" };
+
 
 static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',',  0, "a,b\n",        (const char** const)expected_0, 2, 0 },
@@ -129,6 +143,27 @@ static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',', 0, "a,b,c,d\n1,2,\"3,4\"", (const char** const)expected_16, 4, 1 },
   { ',', 0, "a,b,c,d\n1,2,\"\"\"3,4\"\"\"", (const char** const)expected_17, 4, 1 },
   { ',', 0, "a,b,c,d\n1,2,\"3\n4\"", (const char** const)expected_18, 4, 1 },
+
+  /* Inspired by https://github.com/d3/d3-dsv/blob/master/test/csv-test.js */
+  /* returns the expected objects */
+  { ',', 0, "a,b,c\n1,2,3\n", (const char** const)expected_19, 3, 1 },
+  /* does not strip whitespace */
+  { ',', 0, "a,b,c\n 1, 2,3\n", (const char** const)expected_20, 3, 1 },
+  /* quoted values */
+  { ',', 0, "a,b,c\n\"1\",2,3", (const char** const)expected_21, 3, 1 },
+  { ',', 0, "a,b,c\n\"1\",2,3\n", (const char** const)expected_22, 3, 1 },
+  /* quoted values with quotes */
+  { ',', 0, "a\n\"\"\"hello\"\"\"", (const char** const)expected_23, 1, 1 },
+  /* quoted values with newlines */
+  { ',', 0, "a\n\"new\nline\"", (const char** const)expected_24, 1, 1 },
+  { ',', 0, "a\n\"new\rline\"", (const char** const)expected_25, 1, 1 },
+  { ',', 0, "a\n\"new\r\nline\"", (const char** const)expected_26, 1, 1 },
+  /* Unix newlines */
+  { ',', 0, "a,b,c\n1,2,3\n4,5,\"6\"\n7,8,9", (const char** const)expected_27, 3, 3 },
+  /* Mac newlines */
+  { ',', 0, "a,b,c\r1,2,3\r4,5,\"6\"\r7,8,9", (const char** const)expected_28, 3, 3 },
+  /* DOS newlines */
+  { ',', 0, "a,b,c\r\n1,2,3\r\n4,5,\"6\"\r\n7,8,9", (const char** const)expected_29, 3, 3 },
 
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
