@@ -466,13 +466,13 @@ sv_internal_parse_process_char(sv *t, char c)
   sv_status_t status;
 
 #if defined(SV_DEBUG) && SV_DEBUG > 2
-    if(isprint(c))
-      fprintf(stderr, "State <%s> (%d) with char '%c' (0x%02X)\n",
-              sv_get_state_label((int)t->state), (int)t->state,
-              c, c);
-    else
-      fprintf(stderr, "State <%s> (%d) with char 0x%02X\n",
-              sv_get_state_label((int)t->state), (int)t->state, c);
+  if(isprint(c))
+    fprintf(stderr, "State <%s> (%d) with char '%c' (0x%02X)\n",
+            sv_get_state_label((int)t->state), (int)t->state,
+            c, c);
+  else
+    fprintf(stderr, "State <%s> (%d) with char 0x%02X\n",
+            sv_get_state_label((int)t->state), (int)t->state, c);
 #endif
 
   if(c)
