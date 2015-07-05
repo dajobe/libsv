@@ -9,7 +9,8 @@ Makefile
 Makefile.in
 TAGS
 example
+gen
+libsv.a
 libsv.la
 sv2c
 svtest
-gen

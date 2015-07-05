@@ -4,8 +4,11 @@
 DEBUG_FLAGS=-g3
 #DEBUG_FLAGS=-g3 -DSV_DEBUG=3
 
+SVLIB=libsv.a
 SVLIBSRCS=sv.c option.c write.c read.c
 SVLIBHDRS=sv.h sv_internal.h
+
+LIBS=$(SVLIB)
 
 EXSRCS=example.c sv2c.c gen.c
 EXAMPLES=example sv2c gen
@@ -15,7 +18,7 @@ SRCS=$(EXSRCS) $(SVLIBSRCS) $(TESTSRCS) $(SVLIBHDRS)
 EXES=$(EXAMPLES)
 TESTS=svtest
 
-CLEANFILES=$(EXES) $(TESTS) \
+CLEANFILES=$(EXES) $(LIBS) $(TESTS) \
 stamp-h1
 
 TEST_FILES=test1.csv \
@@ -42,16 +45,19 @@ CFLAGS=$(SAN_FLAGS)
 
 SVLIBOBJS=$(SVLIBSRCS:.c=.o)
 
-all: $(EXES)
+all: $(LIBS) $(EXES)
 
 # Library deps
 sv.c: sv.h
 
+$(SVLIB): $(SVLIBOBJS)
+	$(AR) rv $@ $?
+
 # Object deps
-example: example.o $(SVLIBOBJS)
-svtest: svtest.o $(SVLIBOBJS)
-sv2c: sv2c.o $(SVLIBOBJS)
-gen: gen.o $(SVLIBOBJS)
+example: example.o $(SVLIB)
+svtest: svtest.o $(SVLIB)
+sv2c: sv2c.o $(SVLIB)
+gen: gen.o $(SVLIB)
 
 # Source Deps
 sv2c.c: sv.h
