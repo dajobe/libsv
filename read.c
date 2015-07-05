@@ -82,7 +82,7 @@ sv_free_headers(sv *t)
 /* Create or expand fields,widths,headers arrays to at least size nfields
  */
 static sv_status_t
-sv_init_fields(sv *t, int nfields)
+sv_init_fields(sv *t, unsigned int nfields)
 {
   char** cp;
   size_t* sp;
@@ -282,8 +282,8 @@ sv_parse_save_cell(sv* t)
 {
   sv_status_t status;
   char* s;
-  int cell_ix = t->fields_count;
-  int cell_len = t->fields_buffer_len;
+  unsigned int cell_ix = t->fields_count;
+  size_t cell_len = t->fields_buffer_len;
 
   status = sv_init_fields(t, cell_ix + 1);
   if(status)

@@ -86,7 +86,7 @@ sv_status_t
 sv_write_fields(sv *t, FILE* fh, char** fields, size_t *widths, size_t count)
 {
   sv_status_t status = SV_STATUS_OK;
-  int i;
+  size_t i;
 
   for(i = 0; i < count; i++) {
     char* field = fields[i];
