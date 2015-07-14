@@ -1,12 +1,12 @@
 # Todos #
 
 * Unicode encodings
-* Handle Nulls: allow at least ,, and ,"", and ,\N, for nulls in CSV
+* Handle Nulls (missing values): allow at least ,, and ,"", and ,\N,
+  for nulls in CSV  (numpy `missing_values`)
 * skip initial rows count (numpy `skip_headers` default None; `skip rows` TDM)
 * skip/select initial columns (numpy `usecols`; `skip columns` TDM)
 * convert fields to lower or upper case
 * warn on invalid number of cells in row compared to #headers
-* set the string that represents missing values (numpy `missing_values`)
 * field size limit (ruby `field_size_limit`)
 * set headers as parameter (ruby `headers` with array): implies no
   header line
