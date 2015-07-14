@@ -354,11 +354,10 @@ sv_parse_cell_add_char(sv* t, char c)
  * sv_parse_generate_row:
  * @t: sv object
  *
- * INTERNAL - process one character; NUL indicates end of input
+ * INTERNAL - generate a row from parse state
  *
  * Return value: non-0 on failure
  */
-
 static sv_status_t
 sv_parse_generate_row(sv *t)
 {
@@ -371,7 +370,7 @@ sv_parse_generate_row(sv *t)
             t->skip_rows_remaining);
     sv_dump_buffer(stderr, t->buffer, t->len);
 #endif
-    goto tidy;
+    return status;
   }
 
 #if defined(SV_DEBUG) && SV_DEBUG > 2
@@ -432,12 +431,25 @@ sv_parse_generate_row(sv *t)
 
   t->line++;
 
-  tidy:
-  sv_free_fields(t);
-  sv_reset_line_buffer(t);
-
   return status;
 }
+
+
+/**
+ * sv_parse_prepare_for_new_row:
+ * @t: sv object
+ *
+ * INTERNAL - prepare for creating a new row
+ *
+ * Return value: non-0 on failure
+ */
+static void
+sv_parse_prepare_for_new_row(sv *t)
+{
+  sv_free_fields(t);
+  sv_reset_line_buffer(t);
+}
+
 
 #if defined(SV_DEBUG) && SV_DEBUG > 2
 static const char* const sv_state_labels[SV_STATE_LAST + 1] = {
@@ -494,7 +506,7 @@ sv_internal_parse_process_char(sv *t, char c)
   redo:
   switch(t->state) {
     case SV_STATE_START_PARSE:
-      /* once-only per parse initialising; may be altered by optioons */
+      /* once-only per parse initialising; may be altered by options */
       t->line = 1;
       t->skip_rows_remaining = t->skip_rows;
       t->bad_records = 0;
@@ -529,6 +541,7 @@ sv_internal_parse_process_char(sv *t, char c)
           return status;
 
         sv_parse_generate_row(t);
+        sv_parse_prepare_for_new_row(t);
         t->state = (!c ? SV_STATE_START_ROW : SV_STATE_EOL);
       } else if(t->quote_char && c == t->quote_char) {
         t->state = SV_STATE_IN_QUOTED_CELL;
@@ -588,6 +601,7 @@ sv_internal_parse_process_char(sv *t, char c)
           return status;
 
         sv_parse_generate_row(t);
+        sv_parse_prepare_for_new_row(t);
         t->state = (!c ? SV_STATE_START_ROW : SV_STATE_EOL);
       } else if(t->escape_char && c == t->escape_char) {
         t->state = SV_STATE_ESC_IN_CELL;
@@ -656,6 +670,7 @@ sv_internal_parse_process_char(sv *t, char c)
           return status;
 
         sv_parse_generate_row(t);
+        sv_parse_prepare_for_new_row(t);
         t->state = (!c ? SV_STATE_START_ROW : SV_STATE_EOL);
       } else {
         /* FIXME: could check that <quote> is followed by <sep> */
