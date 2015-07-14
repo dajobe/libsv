@@ -153,7 +153,7 @@ sv_internal_parse_reset(sv* t)
   /* Set initial state */
   t->status = SV_STATUS_OK;
 
-  t->state = SV_STATE_START_FILE;
+  t->state = SV_STATE_START_PARSE;
 }
 
 
@@ -442,6 +442,7 @@ sv_parse_generate_row(sv *t)
 #if defined(SV_DEBUG) && SV_DEBUG > 2
 static const char* const sv_state_labels[SV_STATE_LAST + 1] = {
   "UNKNOWN",
+  "START_PARSE",
   "START_FILE",
   "START_ROW",
   "EOL",
@@ -492,12 +493,16 @@ sv_internal_parse_process_char(sv *t, char c)
 
   redo:
   switch(t->state) {
-    case SV_STATE_START_FILE:
+    case SV_STATE_START_PARSE:
       /* once-only per parse initialising; may be altered by optioons */
       t->line = 1;
       t->skip_rows_remaining = t->skip_rows;
       t->bad_records = 0;
 
+      t->state = SV_STATE_START_FILE;
+      /* FALLTHROUGH */
+
+    case SV_STATE_START_FILE:
       t->state = SV_STATE_START_ROW;
       /* FIXME - add BOM checking for encoding */
 

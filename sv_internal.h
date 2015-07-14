@@ -36,7 +36,9 @@
 
 typedef enum  {
   SV_STATE_UNKNOWN,
-  /* After a reset and before any potential BOM */
+  /* After a reset and before any potential BOM or options are read */
+  SV_STATE_START_PARSE,
+  /* After parsing has been initialized */
   SV_STATE_START_FILE,
   /* After any BOM and expecting record start */
   SV_STATE_START_ROW,
