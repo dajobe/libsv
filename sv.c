@@ -67,9 +67,10 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   t->data_callback = data_callback;
   t->line_callback = NULL;
 
-  /* default flags */
+  /* default flags and options */
   t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
   sv_internal_set_quote_char(t, '"');
+  t->escape_char = '\0';
 
   sv_reset(t);
 

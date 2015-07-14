@@ -151,13 +151,8 @@ sv_internal_parse_reset(sv* t)
   sv_reset_line_buffer(t);
 
   /* Set initial state */
-  t->line = 1;
-
   t->status = SV_STATUS_OK;
 
-  t->bad_records = 0;
-
-  t->escape_char = '\0';
   t->state = SV_STATE_START_FILE;
 }
 
@@ -487,10 +482,14 @@ sv_internal_parse_process_char(sv *t, char c)
   redo:
   switch(t->state) {
     case SV_STATE_START_FILE:
+      /* once-only per parse initialising; may be altered by optioons */
+      t->line = 1;
+      t->bad_records = 0;
+
       t->state = SV_STATE_START_ROW;
       /* FIXME - add BOM checking for encoding */
-      /* FALLTHROUGH */
 
+      /* FALLTHROUGH */
     case SV_STATE_START_ROW:
       if(!c)
         break;
