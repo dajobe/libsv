@@ -81,6 +81,7 @@ typedef sv_status_t (*sv_line_callback)(sv *t, void *user_data, const char* line
  * @SV_OPTION_DOUBLE_QUOTE: Quote char is doubled to quote itself.
  * @SV_OPTION_ESCAPE_CHAR: set field escape char; type int. NUL disables escaping (char)
  * @SV_OPTION_COMMENT_CHAR: set line comment char; type int. NUL disables comment (char)
+ * @SV_OPTION_SKIP_ROWS: set the number of rows to skip; type int.
  *
  * Option type
  */
@@ -94,7 +95,8 @@ typedef enum {
   SV_OPTION_LINE_CALLBACK,
   SV_OPTION_DOUBLE_QUOTE,
   SV_OPTION_ESCAPE_CHAR,
-  SV_OPTION_COMMENT_CHAR
+  SV_OPTION_COMMENT_CHAR,
+  SV_OPTION_SKIP_ROWS
 } sv_option_t;
 
 sv* sv_new(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep);

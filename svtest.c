@@ -74,7 +74,7 @@ typedef struct
 } svtest_context;
 
 
-#define N_TESTS 37
+#define N_TESTS 38
 static const char* const expected_0[4] = {"a", "b", "1", "2" };
 static const char* const expected_1[4] = {"c", "d", "3", "4" };
 static const char* const expected_2[4] = {"e", "f", "5", "6" };
@@ -171,6 +171,7 @@ static const svtest_data_set svtest_data[N_TESTS + 1] = {
   { ',', 0, "a,b,c,d\ncol 1.1,col 1.2\\,\"col 1.3\\\",\"col\n1.4\"", (const char** const)expected_30, 4, 1 },
 
   { ',', SV_OPTION_COMMENT_CHAR, "a,b,c\n#this is a comment\ncat,sat,mat\n", (const char** const)expected_31, 3, 1 },
+  { ',', SV_OPTION_SKIP_ROWS, "skip this row\na,b,c\ncat,sat,mat\n", (const char** const)expected_3, 3, 1 },
 
   { '\0', 0, NULL,           NULL,       0, 0 }
 };
@@ -284,10 +285,20 @@ svtest_run_test(unsigned int test_index)
 
   if(test->option != 0) {
     sv_option_t opt = (sv_option_t)test->option;
-    if(opt == SV_OPTION_COMMENT_CHAR)
-      sv_set_option(t, (sv_option_t)test->option, '#');
-    else
-      sv_set_option(t, (sv_option_t)test->option, 1L);
+    switch(opt) {
+      case SV_OPTION_COMMENT_CHAR:
+        sv_set_option(t, opt, '#');
+        break;
+
+      case SV_OPTION_STRIP_WHITESPACE:
+      case SV_OPTION_SKIP_ROWS:
+        sv_set_option(t, opt, 1L);
+        break;
+
+      default:
+        fprintf(stderr, "%s: Test %d ignoring unknown option %d\n",
+                program, test_index, test->option);
+    }
   }
 
   status = sv_parse_chunk(t, (char*)test->data, data_len);

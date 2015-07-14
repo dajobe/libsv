@@ -364,6 +364,16 @@ sv_parse_generate_row(sv *t)
 {
   sv_status_t status = SV_STATUS_OK;
 
+  if(t->skip_rows_remaining > 0) {
+    t->skip_rows_remaining--;
+#if defined(SV_DEBUG) && SV_DEBUG > 2
+    fprintf(stderr, "Skipping row (%d remaining to skip) ",
+            t->skip_rows_remaining);
+    sv_dump_buffer(stderr, t->buffer, t->len);
+#endif
+    goto tidy;
+  }
+
 #if defined(SV_DEBUG) && SV_DEBUG > 2
   fprintf(stderr, "Generating row %d\n", t->line);
 #endif
@@ -420,10 +430,11 @@ sv_parse_generate_row(sv *t)
     }
   }
 
+  t->line++;
+
+  tidy:
   sv_free_fields(t);
   sv_reset_line_buffer(t);
-
-  t->line++;
 
   return status;
 }
@@ -484,6 +495,7 @@ sv_internal_parse_process_char(sv *t, char c)
     case SV_STATE_START_FILE:
       /* once-only per parse initialising; may be altered by optioons */
       t->line = 1;
+      t->skip_rows_remaining = t->skip_rows;
       t->bad_records = 0;
 
       t->state = SV_STATE_START_ROW;

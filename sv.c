@@ -71,6 +71,7 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
   sv_internal_set_quote_char(t, '"');
   t->escape_char = '\0';
+  t->skip_rows = 0;
 
   sv_reset(t);
 

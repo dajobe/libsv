@@ -100,6 +100,13 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       }
       break;
 
+    case SV_OPTION_SKIP_ROWS:
+      if(1) {
+        int c = va_arg(arg, int);
+        t->skip_rows = c;
+      }
+      break;
+
     default:
     case SV_OPTION_NONE:
       status = SV_STATUS_FAILED;
