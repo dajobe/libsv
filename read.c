@@ -228,17 +228,24 @@ sv_ensure_line_buffer_size(sv *t, size_t len)
 
 #if defined(SV_DEBUG) && SV_DEBUG > 1
 static void
-sv_dump_buffer(FILE* fh, const char* label, const char* buffer, size_t len)
+sv_dump_buffer(FILE* fh, const char* buffer, size_t len)
 {
-  size_t mylen=len;
+  size_t mylen = len;
+  size_t i;
 
-  fprintf(fh, "%s (%zu bytes) >>>", label, len);
+  fputs(">>>", fh);
   if(mylen > 100)
     mylen = 100;
-  fwrite(buffer, 1, mylen, fh);
+  for(i = 0; i < mylen; i++) {
+    const char c = buffer[i];
+    if(isprint(c))
+      fputc(c, fh);
+    else
+      fprintf(fh, "\\x%02X", c);
+  }
   if(mylen != len)
     fputs("...", fh);
-  fputs("<<<\n", fh);
+  fprintf(fh, "<<< (%zu bytes)\n", len);
 }
 #endif
 
@@ -312,9 +319,8 @@ sv_parse_save_cell(sv* t)
   t->fields_widths[cell_ix] = cell_len;
 
 #if defined(SV_DEBUG) && SV_DEBUG > 2
-  fprintf(stderr, "Line %d Cell %d >>", t->line, cell_ix);
-  fwrite(s, 1, cell_len, stderr);
-  fprintf(stderr, "<< (%d)\n", cell_len);
+  fprintf(stderr, "Line %d Cell %d ", t->line, cell_ix);
+  sv_dump_buffer(stderr, s, cell_len);
 #endif
 
   t->fields_buffer_len = 0;
