@@ -3,7 +3,6 @@
 * Unicode encodings
 * Handle Nulls (missing values): allow at least ,, and ,"", and ,\N,
   for nulls in CSV  (numpy `missing_values`)
-* skip initial rows count (numpy `skip_headers` default None; `skip rows` TDM)
 * skip/select initial columns (numpy `usecols`; `skip columns` TDM)
 * convert fields to lower or upper case
 * warn on invalid number of cells in row compared to #headers
