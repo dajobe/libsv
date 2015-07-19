@@ -49,6 +49,7 @@ all: $(LIBS) $(EXES)
 
 # Library deps
 sv.c: sv.h
+$(SVLIBSRCS): sv_internal.h
 
 $(SVLIB): $(SVLIBOBJS)
 	$(AR) rv $@ $?
