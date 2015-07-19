@@ -145,12 +145,16 @@ sv_get_line(sv *t)
  * Get an SV header with optional width
  *
  * Return value: shared pointer to header or NULL if out of range
+ * (and if width_p is not NULL, *width_p will be set to 0)
  */
 const char*
 sv_get_header(sv *t, unsigned int i, size_t *width_p)
 {
-  if(!t || !t->headers || i > t->headers_count)
+  if(!t || !t->headers || i > t->headers_count) {
+    if(width_p)
+      *width_p = 0;
     return NULL;
+  }
 
   if(width_p)
     *width_p = t->headers_widths[i];

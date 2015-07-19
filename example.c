@@ -141,7 +141,7 @@ my_sv_fields_callback(sv *t, void *user_data,
   fprintf(stdout, "%s:%d: Record with %d fields\n",
           c->filename, sv_get_line(t), (int)count);
   for(i = 0; i < count; i++) {
-    size_t header_width;
+    size_t header_width = 0;
     const char* header = sv_get_header(t, i, &header_width);
     
     if(header_width > MAX_HEADER_WIDTH)
