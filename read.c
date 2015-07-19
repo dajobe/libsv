@@ -731,7 +731,7 @@ sv_internal_parse_process_char(sv *t, char c)
  * @buffer: buffer to parse (or NULL)
  * @len: length of @buffer (or 0)
  *
- * Internal - parse a chunk of data
+ * Internal - parse a chunk of data.  NULs in data are ignored.
  *
  * The input data is finished (EOF) if either @buffer is NULL or @len is 0
  *
@@ -750,7 +750,8 @@ sv_internal_parse_chunk(sv *t, char *buffer, size_t len)
   } else {
     while(len--) {
       char c = *buffer++;
-      if(sv_internal_parse_process_char(t, c)) {
+      /* Ignore NULs in buffer */
+      if(c && sv_internal_parse_process_char(t, c)) {
         status = SV_STATUS_FAILED;
         goto done;
       }

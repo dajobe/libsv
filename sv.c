@@ -167,7 +167,8 @@ sv_get_header(sv *t, unsigned int i, size_t *width_p)
  *
  * Parse a chunk of data
  *
- * The input data is finished (EOF) if either @buffer is NULL or @len is 0
+ * The input data is finished (EOF) if either @buffer is NULL or @len
+ * is 0.  NULs in the data are ignored.
  *
  * Return value: #SV_STATUS_OK on success
  */
