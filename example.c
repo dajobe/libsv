@@ -37,6 +37,7 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#include <ctype.h>
 
 #include <sv.h>
 
@@ -53,6 +54,40 @@ typedef struct
 const char* program;
 
 
+static void
+my_sv_dump_string(FILE* fh, const char* buffer, size_t len)
+{
+  size_t mylen = len;
+  size_t i;
+
+  if(!buffer) {
+    fwrite("NULL", sizeof(char), 4, fh);
+    return;
+  }
+
+  if(mylen > 100)
+    mylen = 100;
+  for(i = 0; i < mylen; i++) {
+    const char c = buffer[i];
+    if(isprint(c))
+      fputc(c, fh);
+    else
+      fprintf(fh, "\\x%02X", c);
+  }
+  if(mylen != len)
+    fputs("...", fh);
+}
+
+
+static void
+my_sv_dump_buffer(FILE* fh, const char* buffer, size_t len)
+{
+  fwrite(">>>", sizeof(char), 3, fh);
+  my_sv_dump_string(fh, buffer, len);
+  fprintf(fh, "<<< (%zu bytes)\n", len);
+}
+
+
 static sv_status_t
 my_sv_line_callback(sv *t, void *user_data, const char* line, size_t length)
 {
@@ -64,7 +99,8 @@ my_sv_line_callback(sv *t, void *user_data, const char* line, size_t length)
   if(c->line)
     memcpy(c->line, line, length + 1);
 
-  fprintf(stdout, "%s:%d: Line >>>%s<<<\n", c->filename, sv_get_line(t), line);
+  fprintf(stdout, "%s:%d: Line ", c->filename, sv_get_line(t));
+  my_sv_dump_buffer(stdout, line, length);
 
   /* This code always succeeds */
   return SV_STATUS_OK;
@@ -77,13 +113,15 @@ my_sv_header_callback(sv *t, void *user_data,
                       char** fields, size_t *widths, size_t count)
 {
   unsigned int i;
-  myc *c=(myc*)user_data;
+  myc *c = (myc*)user_data;
 
   fprintf(stdout, "%s:%d: Header with %d fields\n",
           c->filename, sv_get_line(t), (int)count);
-  for(i = 0; i < count; i++)
-    fprintf(stdout, "%3d: '%s' (width %d)\n", (int)i,
-            fields[i], (int)widths[i]);
+  for(i = 0; i < count; i++) {
+    fprintf(stdout, "%3d: '", (int)i);
+    my_sv_dump_string(stdout, fields[i], widths[i]);
+    fprintf(stdout, "' (width %d)\n", (int)widths[i]);
+  }
 
   /* This code always succeeds */
   return SV_STATUS_OK;
@@ -95,7 +133,7 @@ my_sv_fields_callback(sv *t, void *user_data,
                        char** fields, size_t *widths, size_t count)
 {
   unsigned int i;
-  myc *c=(myc*)user_data;
+  myc *c = (myc*)user_data;
 
   c->count++;
 
