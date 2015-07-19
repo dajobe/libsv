@@ -238,7 +238,14 @@ svtest_fields_callback(sv *t, void *user_data,
     unsigned int header_ix = EXPECTED_HEADER_IX(column_i);
     const char* expected_header = c->expected->expected[header_ix];
 
-    if(strcmp(data, expected_data)) {
+    if(!expected_data && data) {
+      fprintf(stderr,
+              "%s: Test %d FAIL '%s' row %d got %s value >>>%s<<< expected no data\n",
+              program, c->test_index, c->line, c->rows_count,
+              expected_header,
+              data);
+      c->data_errors++;
+    } else if(strcmp(data, expected_data)) {
       fprintf(stderr,
               "%s: Test %d FAIL '%s' row %d got %s value >>>%s<<< expected >>>%s<<<\n",
               program, c->test_index, c->line, c->rows_count,
