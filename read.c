@@ -232,7 +232,7 @@ sv_dump_buffer(FILE* fh, const char* buffer, size_t len)
   if(mylen > 100)
     mylen = 100;
   for(i = 0; i < mylen; i++) {
-    const char c = buffer[i];
+    const unsigned char c = (const unsigned char)buffer[i];
     if(isprint(c))
       fputc(c, fh);
     else
