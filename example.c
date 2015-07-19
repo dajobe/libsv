@@ -110,7 +110,7 @@ my_sv_line_callback(sv *t, void *user_data, const char* line, size_t length)
 
 static sv_status_t
 my_sv_header_callback(sv *t, void *user_data,
-                      char** fields, size_t *widths, size_t count)
+                      char** headers, size_t *widths, size_t count)
 {
   unsigned int i;
   myc *c = (myc*)user_data;
@@ -119,7 +119,7 @@ my_sv_header_callback(sv *t, void *user_data,
           c->filename, sv_get_line(t), (int)count);
   for(i = 0; i < count; i++) {
     fprintf(stdout, "%3d: '", (int)i);
-    my_sv_dump_string(stdout, fields[i], widths[i]);
+    my_sv_dump_string(stdout, headers[i], widths[i]);
     fprintf(stdout, "' (width %d)\n", (int)widths[i]);
   }
 
@@ -139,11 +139,12 @@ my_sv_fields_callback(sv *t, void *user_data,
 
   fprintf(stdout, "%s:%d: Record with %d fields\n",
           c->filename, sv_get_line(t), (int)count);
-  for(i = 0; i < count; i++)
-    fprintf(stdout, 
-            "%3d %-10s: '%s' (width %d)\n", (int)i,
-            sv_get_header(t, i, NULL), fields[i], (int)widths[i]);
-
+  for(i = 0; i < count; i++) {
+    const char* header = sv_get_header(t, i, NULL);
+    fprintf(stdout, "%3d %-10s: '", (int)i, header ? header : "NULL");
+    my_sv_dump_string(stdout, fields[i], widths[i]);
+    fprintf(stdout, "' (width %d)\n", (int)widths[i]);
+  }
   /* This code always succeeds */
   return SV_STATUS_OK;
 }
