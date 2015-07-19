@@ -68,7 +68,7 @@ my_sv_dump_string(FILE* fh, const char* buffer, size_t len)
   if(mylen > 100)
     mylen = 100;
   for(i = 0; i < mylen; i++) {
-    const char c = buffer[i];
+    const unsigned char c = (const unsigned char)buffer[i];
     if(isprint(c))
       fputc(c, fh);
     else
@@ -127,6 +127,7 @@ my_sv_header_callback(sv *t, void *user_data,
   return SV_STATUS_OK;
 }
 
+#define MAX_HEADER_WIDTH 10
 
 static sv_status_t
 my_sv_fields_callback(sv *t, void *user_data,
@@ -140,8 +141,16 @@ my_sv_fields_callback(sv *t, void *user_data,
   fprintf(stdout, "%s:%d: Record with %d fields\n",
           c->filename, sv_get_line(t), (int)count);
   for(i = 0; i < count; i++) {
-    const char* header = sv_get_header(t, i, NULL);
-    fprintf(stdout, "%3d %-10s: '", (int)i, header ? header : "NULL");
+    size_t header_width;
+    const char* header = sv_get_header(t, i, &header_width);
+    
+    if(header_width > MAX_HEADER_WIDTH)
+      header_width =  MAX_HEADER_WIDTH;
+    fprintf(stdout, "%3d: ", (int)i);
+    my_sv_dump_string(stdout, header, header_width);
+    while(header_width++ < MAX_HEADER_WIDTH)
+      fputc(' ', stdout);
+    fwrite(": '", sizeof(char), 3, stdout);
     my_sv_dump_string(stdout, fields[i], widths[i]);
     fprintf(stdout, "' (width %d)\n", (int)widths[i]);
   }
