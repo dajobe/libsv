@@ -1,6 +1,9 @@
 # Todos #
 
 * Unicode encodings
+  * [UTF-16](https://en.wikipedia.org/wiki/UTF-16)
+  * [The Absolute Minimum Everyone Working With Data Absolutely, Positively Must Know About File Types, Encoding, Delimiters and Data types (No Excuses!)](https://theonemanitdepartment.wordpress.com/2014/12/15/the-absolute-minimum-everyone-working-with-data-absolutely-positively-must-know-about-file-types-encoding-delimiters-and-data-types-no-excuses/)
+  * [The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)](http://www.joelonsoftware.com/articles/Unicode.html)
 * Handle Nulls (missing values): allow at least ,, and ,"", and ,\N,
   for nulls in CSV  (numpy `missing_values`)
 * skip/select initial columns (numpy `usecols`; `skip columns` TDM)
@@ -13,11 +16,14 @@
 * flag for empty line decision: an EOF, single empty field or no field?
 * allow ';' seps like ',' but for regions where , is in numbers (Excel in NO)
 * ASCII delimited separators ASCII 28-31: 31 field sep, 30 record sep
+* Skip blank rows - rows in which all cells are empty / 0-length  (`skipBlankRows` TDM)
+* Original row numbers without skips and headers (`source numbers` of a row in TDM)
 
 # Specifications #
 
 * [Model for Tabular Data and Metadata on the Web][1][8]
-  from the W3C [CSV on the Web Working Group][2]
+from the W3C [CSV on the Web Working Group][2]
+* [CSVW Namespace Vocabulary Terms][9]
 * [ASCII delimited text][3]
 * [Delimiter separated values][4]
 * [Comma-separated values][5]
@@ -64,3 +70,4 @@
 [6]: http://dataprotocols.org/tabular-data-package/#csv-files
 [7]: http://dataprotocols.org/csv-dialect/
 [8]: http://www.w3.org/TR/tabular-metadata/
+[9]: http://www.w3.org/ns/csvw
