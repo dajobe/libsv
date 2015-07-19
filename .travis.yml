@@ -8,3 +8,4 @@ compiler:
   - gcc
   - clang
 script: make -f GNUMakefile && make -f GNUMakefile check
+sudo: false
