@@ -373,6 +373,20 @@ sv_parse_generate_row(sv *t)
     return status;
   }
 
+  if(t->comment_prefix && !strncmp(t->buffer, t->comment_prefix,
+                                   t->comment_prefix_len)) {
+    char* comment = t->buffer + t->comment_prefix_len;
+    size_t comment_len = t->len - t->comment_prefix_len;
+#if defined(SV_DEBUG) && SV_DEBUG > 2
+    fprintf(stderr, "Skipping comment row %d ", t->line);
+    sv_dump_buffer(stderr, comment, comment_len);
+#endif
+    if(t->comment_callback)
+      status = t->comment_callback(t, t->callback_user_data,
+                                   comment, comment_len);
+    return status;
+  }
+
 #if defined(SV_DEBUG) && SV_DEBUG > 2
   fprintf(stderr, "Generating row %d\n", t->line);
 #endif
@@ -500,9 +514,6 @@ sv_internal_parse_process_char(sv *t, char c)
             sv_get_state_label((int)t->state), (int)t->state, c);
 #endif
 
-  if(c)
-    sv_line_buffer_add_char(t, c);
-
   redo:
   switch(t->state) {
     case SV_STATE_START_PARSE:
@@ -524,9 +535,6 @@ sv_internal_parse_process_char(sv *t, char c)
         break;
       else if(c == '\n' || c == '\r') {
         t->state = SV_STATE_EOL;
-        break;
-      } else if(c == t->comment_char) {
-        t->state = SV_STATE_COMMENT;
         break;
       }
       t->state = SV_STATE_START_CELL;
@@ -709,6 +717,9 @@ sv_internal_parse_process_char(sv *t, char c)
     default:
       break;
   }
+
+  if(c && t->state != SV_STATE_EOL)
+    sv_line_buffer_add_char(t, c);
 
   return SV_STATUS_OK;
 }

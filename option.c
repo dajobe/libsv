@@ -30,6 +30,7 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#include <string.h>
 
 #include <sv.h>
 #include "sv_internal.h"
@@ -93,10 +94,21 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       }
       break;
 
-    case SV_OPTION_COMMENT_CHAR:
+    case SV_OPTION_COMMENT_PREFIX:
       if(1) {
-        int c = va_arg(arg, int);
-        t->comment_char = c;
+        char* s = va_arg(arg, char*);
+        if(s && *s) {
+          size_t l = strlen(s);
+          char *new_s = malloc(l + 1);
+          if(new_s) {
+            memcpy(new_s, s, l + 1);
+            if(t->comment_prefix)
+              free(t->comment_prefix);
+            t->comment_prefix = new_s;
+            t->comment_prefix_len = l;
+          } else
+            status = SV_STATUS_FAILED;
+        }
       }
       break;
 
@@ -104,6 +116,13 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       if(1) {
         int c = va_arg(arg, int);
         t->skip_rows = c;
+      }
+      break;
+
+    case SV_OPTION_COMMENT_CALLBACK:
+      if(1) {
+        sv_line_callback cb = (sv_line_callback)va_arg(arg, void*);
+        t->comment_callback = cb;
       }
       break;
 

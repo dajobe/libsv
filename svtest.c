@@ -170,7 +170,7 @@ static const svtest_data_set svtest_data[N_TESTS + 1] = {
   /* \ is not a special character by default */
   { ',', 0, "a,b,c,d\ncol 1.1,col 1.2\\,\"col 1.3\\\",\"col\n1.4\"", (const char** const)expected_30, 4, 1 },
 
-  { ',', SV_OPTION_COMMENT_CHAR, "a,b,c\n#this is a comment\ncat,sat,mat\n", (const char** const)expected_31, 3, 1 },
+  { ',', SV_OPTION_COMMENT_PREFIX, "a,b,c\n#this is a comment\ncat,sat,mat\n", (const char** const)expected_31, 3, 1 },
   { ',', SV_OPTION_SKIP_ROWS, "skip this row\na,b,c\ncat,sat,mat\n", (const char** const)expected_3, 3, 1 },
 
   { '\0', 0, NULL,           NULL,       0, 0 }
@@ -293,8 +293,8 @@ svtest_run_test(unsigned int test_index)
   if(test->option != 0) {
     sv_option_t opt = (sv_option_t)test->option;
     switch(opt) {
-      case SV_OPTION_COMMENT_CHAR:
-        sv_set_option(t, opt, '#');
+      case SV_OPTION_COMMENT_PREFIX:
+        sv_set_option(t, opt, "#");
         break;
 
       case SV_OPTION_STRIP_WHITESPACE:

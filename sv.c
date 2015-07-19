@@ -72,6 +72,7 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   sv_internal_set_quote_char(t, '"');
   t->escape_char = '\0';
   t->skip_rows = 0;
+  t->comment_prefix = NULL;
 
   sv_reset(t);
 
@@ -108,6 +109,9 @@ sv_free(sv *t)
 
   sv_internal_parse_reset(t);
   sv_internal_free_line_buffer(t);
+
+  if(t->comment_prefix)
+    free(t->comment_prefix);
 
   free(t);
 }

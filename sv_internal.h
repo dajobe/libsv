@@ -116,12 +116,17 @@ struct sv_s {
 
   sv_parse_state state;
 
-  char comment_char;
+  /* comment string interpreted at start of a row */
+  char* comment_prefix;
+  size_t comment_prefix_len;
 
   /* number of rows to skip as set by SV_OPTION_SKIP_ROWS */
   int skip_rows;
   /* number of rows yet to skip in this parse; taken from skip_rows */
   int skip_rows_remaining;
+
+  /* called with the comment */
+  sv_line_callback comment_callback;
 };
 
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);

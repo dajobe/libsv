@@ -149,6 +149,20 @@ my_sv_fields_callback(sv *t, void *user_data,
 }
 
 
+static sv_status_t
+my_sv_comment_callback(sv *t, void *user_data,
+                       const char* comment, size_t length)
+{
+  myc *c = (myc*)user_data;
+  fprintf(stdout, "%s:%d: Comment ", c->filename, sv_get_line(t));
+  my_sv_dump_buffer(stdout, comment, length);
+
+  /* This code always succeeds */
+  return SV_STATUS_OK;
+}
+
+
+
 int
 main(int argc, char *argv[])
 {
@@ -227,6 +241,7 @@ main(int argc, char *argv[])
 
   sv_set_option(t, SV_OPTION_SAVE_HEADER, option_save_header);
   sv_set_option(t, SV_OPTION_LINE_CALLBACK, my_sv_line_callback);
+  sv_set_option(t, SV_OPTION_COMMENT_CALLBACK, my_sv_comment_callback);
 
   while(!feof(fh)) {
     char buffer[1024];
