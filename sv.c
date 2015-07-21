@@ -66,6 +66,7 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   t->header_callback = header_callback;
   t->data_callback = data_callback;
   t->line_callback = NULL;
+  t->comment_callback = NULL;
 
   /* default flags and options */
   t->flags = SV_FLAGS_SAVE_HEADER | SV_FLAGS_QUOTED_FIELDS;
