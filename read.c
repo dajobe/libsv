@@ -223,12 +223,16 @@ sv_ensure_line_buffer_size(sv *t, size_t len)
 
 #if defined(SV_DEBUG) && SV_DEBUG > 1
 static void
-sv_dump_buffer(FILE* fh, const char* buffer, size_t len)
+sv_dump_string(FILE* fh, const char* buffer, size_t len)
 {
   size_t mylen = len;
   size_t i;
 
-  fputs(">>>", fh);
+  if(!buffer) {
+    fwrite("NULL", sizeof(char), 4, fh);
+    return;
+  }
+
   if(mylen > 100)
     mylen = 100;
   for(i = 0; i < mylen; i++) {
@@ -240,8 +244,18 @@ sv_dump_buffer(FILE* fh, const char* buffer, size_t len)
   }
   if(mylen != len)
     fputs("...", fh);
+}
+
+
+static void
+sv_dump_buffer(FILE* fh, const char* buffer, size_t len)
+{
+  fwrite(">>>", sizeof(char), 3, fh);
+  sv_dump_string(fh, buffer, len);
   fprintf(fh, "<<< (%zu bytes)\n", len);
 }
+
+
 #endif
 
 /**
