@@ -40,7 +40,10 @@ from the W3C [CSV on the Web Working Group][2]
 
 # Other implementations #
 
-* Python core: https://github.com/python/cpython/blob/master/Modules/_csv.c
+* Python core:
+  https://github.com/python/cpython/blob/master/Modules/_csv.c
+  https://github.com/python/cpython/blob/master/Lib/csv.py
+  https://github.com/python/cpython/blob/master/Lib/test/test_csv.py
 * Python numpy: http://docs.scipy.org/doc/numpy/user/basics.io.genfromtxt.html
   https://github.com/numpy/numpy/blob/master/numpy/lib/npyio.py#L1257
 * Ruby: https://github.com/ruby/ruby/blob/trunk/lib/csv.rb
