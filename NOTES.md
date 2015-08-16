@@ -40,6 +40,9 @@ from the W3C [CSV on the Web Working Group][2]
 
 # Other implementations #
 
+* C:
+  [Miller](http://johnkerl.org/miller/doc/index.html)
+  https://github.com/johnkerl/miller
 * Python core:
   https://github.com/python/cpython/blob/master/Modules/_csv.c
   https://github.com/python/cpython/blob/master/Lib/csv.py
@@ -50,6 +53,7 @@ from the W3C [CSV on the Web Working Group][2]
 * Perl: https://metacpan.org/pod/Text::CSV_XS
   https://github.com/Tux/Text-CSV_XS
   https://github.com/Tux/Text-CSV_XS/blob/master/CSV_XS.xs
+  https://github.com/benbernard/RecordStream
 * Javascript: https://github.com/mholt/PapaParse.git
   https://github.com/knrz/CSV.js.git
   https://github.com/d3/d3-dsv
