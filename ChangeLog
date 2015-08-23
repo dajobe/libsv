@@ -1,3 +1,250 @@
+2015-08-15  Dave Beckett <dave@dajobe.org>
+
+	* NOTES.md: C and perl impls
+
+2015-08-04  Dave Beckett <dave@dajobe.org>
+
+	* NOTES.md: more python notes
+
+2015-07-29  Dave Beckett <dave@dajobe.org>
+
+	* read.c: Import sv_dump_buffer/string from example code
+
+2015-07-21  Dave Beckett <dave@dajobe.org>
+
+	* sv.c: NULL out initial comment_callback
+
+2015-07-19  Dave Beckett <dave@dajobe.org>
+
+	* .travis.yml:
+	Make Travis-CI tests run in a container
+
+	* sv.c:
+	(sv_get_header): Allow i 0..headers_count-1
+
+	* example.c, sv.c:
+	(sv_get_header): Handle out of range, set width to 0
+
+	* read.c, sv.c:
+	Ignore NULs in data
+
+	* read.c:
+	cast for unsigned char
+
+	* example.c:
+	more example headers printing
+
+	* example.c:
+	example headers printing
+
+	* example.c, option.c, read.c, sv.c, sv.h, sv_internal.h,
+	svtest.c: Use comment prefix string and add callback Replace the
+	comment char option SV_OPTION_COMMENT_CHAR with a comment prefix
+	option SV_OPTION_COMMENT_PREFIX Added option
+	SV_OPTION_COMMENT_CALLBACK calling the line callback with the
+	comment string.  Updated example to use this.  Do not add newlines
+	to line buffer if in state EOL - affects both line and comment
+	callbacks.
+
+	* example.c: example.c: use more careful string printing
+	(my_sv_dump_string, my_sv_dump_buffer): Added used by line and
+	header callbacks.
+
+	* GNUMakefile: all sources depend on internal header
+
+	* svtest.c: Do not core dump if expected data is NULL
+
+	* NOTES.md: more TDM
+
+2015-07-14  Dave Beckett <dave@dajobe.org>
+
+	* read.c:
+	(sv_parse_prepare_for_new_row): Added Pulled out of
+	sv_parse_generate_row and removes a goto.
+
+	* read.c, sv_internal.h: Add SV_STATE_START_PARSE state
+
+	* NOTES.md: skip rows done
+
+	* option.c, read.c, sv.c, sv.h, sv_internal.h, svtest.c: Add
+	SV_OPTION_SKIP_ROWS to skip initial number of rows.  With test
+
+	* read.c, sv.c:
+	Move init of parser to first state so it can pickup
+	flags
+
+	* NOTES.md: update nodes
+
+	* read.c: Make sv_dump_buffer handle non-printables.
+
+2015-07-05  Dave Beckett <dave@dajobe.org>
+
+	* read.c: ws
+
+	* read.c, write.c: comparing int signs
+
+	* .gitignore, GNUMakefile: Make a libsv.a for GNUMakefile
+
+	* Makefile.am: Update for parse V2 read.c
+
+2015-07-04  Dave Beckett <dave@dajobe.org>
+
+	* Merge pull request #1 from dajobe/parse-v2 SV parser V2
+
+	* NOTES.md, option.c, parse2.c, sv.h, sv_internal.h, svtest.c: Add
+	SV_OPTION_COMMENT_CHAR to set comment char Removes fixed '#'
+
+	* parse2.c: no need for gsr:
+
+	* common-parse.c, parse2.c, sv.c, sv_internal.h: Add line buffer
+	so line callback works again
+
+	* NOTES.md, design.md: docs
+
+	* GNUMakefile, common-parse.c, parse.c, sv_internal.h: Kill parse
+	V1
+
+	* parse2.c, sv.h: Allow quote_char to be NUL.  Document that for
+	escape_char too
+
+	* option.c, sv.h: Add SV_OPTION_ESCAPE_CHAR
+
+	* common-parse.c, parse2.c, svtest.c: \ is not a special character
+	by default
+
+	* svtest.c: Tests inspired by d3-dsv csv-test.js Add tests
+	inspired by
+	https://github.com/d3/d3-dsv/blob/master/test/csv-test.js
+
+	* svtest.c: Tests inspired by CSV.js tests Inspired by
+	https://github.com/knrz/CSV.js/blob/master/test.js
+
+	* example.c: Add -n option to not assume a header
+
+	* svtest.c: Add test 21 from
+	https://news.ycombinator.com/item?id=7795451
+
+	* GNUMakefile: debug flags
+
+	* common-parse.c, parse2.c, sv_internal.h: leak fixes
+
+2015-07-03  Dave Beckett <dave@dajobe.org>
+
+	* common-parse.c, parse2.c, sv.c, sv_internal.h: headers count
+
+	* parse2.c: flags not options
+
+2015-07-01  Dave Beckett <dave@dajobe.org>
+
+	* common-parse.c, parse2.c: headers fix
+
+	* GNUMakefile, common-parse.c, parse2.c, sv_internal.h: SV parser
+	V2
+
+2015-06-21  Dave Beckett <dave@dajobe.org>
+
+	* sv_internal.h: Add explicit double quoting option for ""
+	Added option SV_OPTION_DOUBLE_QUOTE
+	Added internal bitflag SV_FLAGS_DOUBLE_QUOTE
+	(sv_set_quote_char): Added internal method
+	to set flag when quote is set.  Update writer to respect flag
+
+	* GNUMakefile, common-parse.c, parse.c, sv_internal.h: Add common
+	parsing module
+
+	* option.c, parse.c, sv.c, sv.h, sv_internal.h, write.c:
+	Add explicit double quoting option for ""
+	Added option SV_OPTION_DOUBLE_QUOTE
+	Added internal bitflag SV_FLAGS_DOUBLE_QUOTE
+	(sv_set_quote_char): Added internal method to set flag when quote is
+	set.  Update writer to respect flag
+
+2015-01-15  Dave Beckett <dave@dajobe.org>
+
+	* example.c, sv.c, svtest.c: ws
+
+2015-01-13  Dave Beckett <dave@dajobe.org>
+
+	* sv.c:
+	(sv_new): Init defaults once
+
+	* design.md: Import design
+
+	* parse.c, sv.c, sv_internal.h:
+	(sv_internal_parse_reset): Added
+
+	* sv.c:
+	(sv_new): Calloc block
+
+2015-01-12  Dave Beckett <dave@dajobe.org>
+
+	* GNUMakefile, Makefile.am, parse.c, sv.c, sv_internal.h: Split
+	parsing out into own module
+
+	* GNUMakefile, Makefile.am, option.c, sv.c, sv.h, sv_internal.h,
+	write.c: Split option and write code out into own modules
+
+2015-01-10  Dave Beckett <dave@dajobe.org>
+
+	* README.md, sv.c, sv.h:
+	(sv_reset): Added to init and reset parsing state
+
+	* sv.c: word
+
+	* LICENSE.txt, NOTICE, example.c, gen.c, sv.c, sv.h, sv2c.c,
+	svtest.c: 2015
+
+2014-10-01  Dave Beckett <dave@dajobe.org>
+
+	* .gitignore, GNUMakefile, gen.c: Added gen.c SV writer code
+
+	* README.md, sv.c, sv.h:
+	(sv_write_fields): Added to API to write SV
+
+2014-05-25  Dave Beckett <dave@dajobe.org>
+
+	* example.c: show sep
+
+2014-04-16  Dave Beckett <dave@dajobe.org>
+
+	* sv.c: Add break after end of case [coverity CID 29230]
+	(sv_set_option_vararg): case SV_OPTION_LINE_CALLBACK: Add break
+
+	* example.c: Init c earlier so that it is initialized for error
+	path [coverity CID 29233]
+
+2014-04-04  Dave Beckett <dave@dajobe.org>
+
+	* sv.c:
+	(sv_new): Init line_callback
+
+2014-03-27  Dave Beckett <dave@dajobe.org>
+
+	* sv.c, sv.h: autodocs
+
+2014-03-27  Dave Beckett <dave@dajobe.org>
+
+	* sv.c:
+	(sv_parse_chunk_line): Handle malloc failure for fields
+
+	* README.md, example.c, sv.c, sv.h, sv2c.c, svtest.c:
+	(sv_new): Renamed from sv_init.  Added autodocs (sv_free): also
+	added autodocs
+
+2014-01-26  Dave Beckett <dave@dajobe.org>
+
+	* .gitignore, AUTHORS, Makefile.am, NEWS, autogen.sh, configure.ac:
+	Revert "GNU configureize" This reverts commit
+	75ed8771a7914871e672ce80d5b56beb93ef47b7.  Conflicts: 	ChangeLog
+	Makefile.am
+
+	* example.c, sv2c.c: memset args swap
+
+2014-01-20  Dave Beckett <dave@dajobe.org>
+
+	* .last-cl-gen, ChangeLog, Makefile.am: ChangeLog and maintainer
+	rule for it
+
 2014-01-19  Dave Beckett  <dave@dajobe.org>
 
 	* Update dist rules to package svtest and autostuff
