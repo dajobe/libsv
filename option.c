@@ -99,7 +99,7 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
         char* s = va_arg(arg, char*);
         if(s && *s) {
           size_t l = strlen(s);
-          char *new_s = malloc(l + 1);
+          char *new_s = (char*)malloc(l + 1);
           if(new_s) {
             memcpy(new_s, s, l + 1);
             if(t->comment_prefix)
