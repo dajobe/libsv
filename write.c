@@ -47,7 +47,8 @@ sv_write_field(sv* t, FILE* fh, const char* field, size_t width)
   const char *p;
 
   for(p = field; *p ; p++) {
-    if(*p == t->field_sep || *p == t->quote_char || *p == '\r' || *p == '\n') {
+    if(*p == t->field_sep || *p == t->quote_char || *p == t->escape_char ||
+       *p == '\r' || *p == '\n') {
       needs_quote = 1;
       break;
     }
@@ -56,10 +57,15 @@ sv_write_field(sv* t, FILE* fh, const char* field, size_t width)
   if(needs_quote) {
     fputc(t->quote_char, fh);
     for(p = field; *p ; p++) {
-      if(*p == t->quote_char) {
-        if(t->flags & SV_FLAGS_DOUBLE_QUOTE)
+      if(*p == t->field_sep || *p == t->quote_char) {
+        /* Escape the field separator or quote char */
+        if(*p == t->quote_char && (t->flags & SV_FLAGS_DOUBLE_QUOTE))
           fputc(*p, fh);
-        /* else FIXME - what to do when cannot double a quote? */
+        else
+          fputc(t->escape_char, fh);
+      } else if(*p == t->escape_char) {
+        /* Escape the escape char if defined */
+        fputc(t->escape_char, fh);
       }
       fputc(*p, fh);
     }
