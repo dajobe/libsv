@@ -1,3 +1,10 @@
+2017-07-01  Dave Beckett  <dave@dajobe.org>
+
+	* Fix escaping escape chars and quotes
+	(sv_write_field): Escape chars need quoting. Escape quote char
+	with doubling or using escape char.  Escape the escape char with
+	doubling.
+
 2015-08-15  Dave Beckett <dave@dajobe.org>
 
 	* NOTES.md: C and perl impls
