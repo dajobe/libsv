@@ -302,6 +302,17 @@ svtest_run_test(unsigned int test_index)
         sv_set_option(t, opt, 1L);
         break;
 
+      case SV_OPTION_NONE:
+      case SV_OPTION_SAVE_HEADER:
+      case SV_OPTION_BAD_DATA_ERROR:
+      case SV_OPTION_QUOTED_FIELDS:
+      case SV_OPTION_QUOTE_CHAR:
+      case SV_OPTION_LINE_CALLBACK:
+      case SV_OPTION_DOUBLE_QUOTE:
+      case SV_OPTION_ESCAPE_CHAR:
+      case SV_OPTION_COMMENT_CALLBACK:
+        break;
+
       default:
         fprintf(stderr, "%s: Test %d ignoring unknown option %d\n",
                 program, test_index, test->option);
