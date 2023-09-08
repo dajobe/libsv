@@ -423,7 +423,7 @@ sv_parse_generate_row(sv *t)
     t->headers_widths = sp;
 
     for(i = 0; i < nheaders; i++) {
-      int header_width = t->fields_widths[i];
+      size_t header_width = t->fields_widths[i];
       t->headers[i] = (char*)malloc(header_width + 1);
       if(!t->headers[i])
         return SV_STATUS_NO_MEMORY;
