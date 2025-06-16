@@ -26,10 +26,7 @@
 #endif
 
 #include <stdarg.h>
-
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 #include <string.h>
 
 #include <sv.h>

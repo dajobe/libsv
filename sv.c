@@ -27,10 +27,7 @@
 
 #include <string.h>
 #include <stdarg.h>
-
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 
 #include <sv.h>
 #include "sv_internal.h"

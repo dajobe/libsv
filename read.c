@@ -27,11 +27,9 @@
 
 #include <string.h>
 #include <ctype.h>
-
-#ifdef HAVE_STDLIB_H
+#include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
-#endif
-#include <ctype.h>
 
 #include <sv.h>
 #include "sv_internal.h"
