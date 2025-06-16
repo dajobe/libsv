@@ -73,7 +73,7 @@ if MAINTAINER_MODE
 .PHONY: update-ChangeLog
 
 # Requires gitlog-to-changelog from
-# http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;f=build-aux/gitlog-to-changelog
+# https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;f=build-aux/gitlog-to-changelog
 update-ChangeLog:
 	if test -d $(srcdir)/.git; then                         \
 	   gitlog-to-changelog                        \

@@ -131,5 +131,5 @@ typedef struct {
 } sv_parse;
 ```
 
-[1]: http://www.w3.org/TR/tabular-data-model/
-[2]: http://www.w3.org/2013/csvw/wiki/Main_Page
+[1]: https://www.w3.org/TR/tabular-data-model/
+[2]: https://www.w3.org/2013/csvw/wiki/Main_Page

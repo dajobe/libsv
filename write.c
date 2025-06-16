@@ -2,7 +2,7 @@
  *
  * write.c - Write SV
  *
- * Copyright (C) 2009-2015, Dave Beckett http://www.dajobe.org/
+ * Copyright (C) 2009-2025, Dave Beckett http://www.dajobe.org/
  *
  * This package is Free Software
  *

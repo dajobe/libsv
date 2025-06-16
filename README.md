@@ -50,4 +50,4 @@ Example
 See `example.c` for API use.
 
 Dave Beckett
-http://www.dajobe.org/
+https://www.dajobe.org/

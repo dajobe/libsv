@@ -2,7 +2,7 @@
  *
  * gen.c - SV generator example program
  *
- * Copyright (C) 2014-2015, Dave Beckett http://www.dajobe.org/
+ * Copyright (C) 2014-2025, Dave Beckett https://www.dajobe.org/
  *
  * This package is Free Software
  *

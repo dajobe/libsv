@@ -2,7 +2,7 @@
  *
  * read.c - Read SV
  *
- * Copyright (C) 2015, Dave Beckett http://www.dajobe.org/
+ * Copyright (C) 2015-2025, Dave Beckett https://www.dajobe.org/
  *
  * This package is Free Software
  *
