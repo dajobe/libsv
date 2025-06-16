@@ -388,16 +388,16 @@ static int svtest_run_custom_skip_rows_gt_total(void) {
   sv *t = NULL;
   svtest_data_set current_test_data = {
       .sep = ',',
-      .option = 0, // Options set manually
+      .option = 0, /* Options set manually */
       .data = "Header1,Header2\nData1,Data2",
       .expected = NULL,
-      .columns_count = 0, // Expected header columns (none)
-      .rows_count = 0     // Expected data rows (none)
+      .columns_count = 0, /* Expected header columns (none) */
+      .rows_count = 0     /* Expected data rows (none) */
   };
   int rc = 0;
 
   memset(&c, '\0', sizeof(c));
-  c.test_index = -502; // Unique ID
+  c.test_index = -502; /* Unique ID */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test Skip Rows > Total Lines...\n");
@@ -408,7 +408,7 @@ static int svtest_run_custom_skip_rows_gt_total(void) {
     return 1;
   }
 
-  sv_set_option(t, SV_OPTION_SKIP_ROWS, 3L); // Skip 3 rows
+  sv_set_option(t, SV_OPTION_SKIP_ROWS, 3L); /* Skip 3 rows */
 
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
   sv_parse_chunk(t, NULL, 0);
@@ -421,12 +421,12 @@ static int svtest_run_custom_skip_rows_gt_total(void) {
     fprintf(stderr, "%s: Test Custom Skip Rows > Total Lines FAIL - data errors (%d)\n", program, c.data_errors);
     rc = 1;
   }
-  // c.columns_count is from header_callback, should be 0
+  /* c.columns_count is from header_callback, should be 0 */
   if (c.columns_count != current_test_data.columns_count) {
     fprintf(stderr, "%s: Test Custom Skip Rows > Total Lines FAIL - got %d header columns, expected %d\n", program, c.columns_count, current_test_data.columns_count);
     rc = 1;
   }
-  // c.rows_count is from fields_callback, should be 0
+  /* c.rows_count is from fields_callback, should be 0 */
   if (c.rows_count != current_test_data.rows_count) {
      fprintf(stderr, "%s: Test Custom Skip Rows > Total Lines FAIL - saw %d data records, expected %d\n", program, c.rows_count, current_test_data.rows_count);
      rc = 1;
@@ -448,16 +448,16 @@ static int svtest_run_custom_skip_comment_interaction(void) {
   sv *t = NULL;
   svtest_data_set current_test_data = {
       .sep = ',',
-      .option = 0, // Options set manually
+      .option = 0, /* Options set manually */
       .data = "# Comment line\nHeader1,Header2\nData1,Data2",
       .expected = expected_custom_skip_comment_interaction,
-      .columns_count = 2, // Expected header columns
-      .rows_count = 1     // Expected data rows
+      .columns_count = 2, /* Expected header columns */
+      .rows_count = 1     /* Expected data rows */
   };
   int rc = 0;
 
   memset(&c, '\0', sizeof(c));
-  c.test_index = -501; // Unique ID
+  c.test_index = -501; /* Unique ID */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test Skip/Comment Interaction...\n");
@@ -469,7 +469,7 @@ static int svtest_run_custom_skip_comment_interaction(void) {
   }
 
   sv_set_option(t, SV_OPTION_COMMENT_PREFIX, "#");
-  sv_set_option(t, SV_OPTION_SKIP_ROWS, 1L); // Skip 1 row
+  sv_set_option(t, SV_OPTION_SKIP_ROWS, 1L); /* Skip 1 row */
 
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
   sv_parse_chunk(t, NULL, 0);
@@ -507,17 +507,17 @@ static int svtest_run_custom_strip_whitespace_empty(void) {
   sv *t = NULL;
   svtest_data_set current_test_data = {
       .sep = ',',
-      // SV_OPTION_STRIP_WHITESPACE is set via sv_set_option directly in this test
+      /* SV_OPTION_STRIP_WHITESPACE is set via sv_set_option directly in this test */
       .option = 0,
       .data = "h1,h2,h3\n\"   \",\"  \",xyz",
       .expected = expected_custom_strip_ws_empty,
-      .columns_count = 3, // Expected header columns
-      .rows_count = 1     // Expected data rows
+      .columns_count = 3, /* Expected header columns */
+      .rows_count = 1     /* Expected data rows */
   };
   int rc = 0;
 
   memset(&c, '\0', sizeof(c));
-  c.test_index = -401; // Unique ID
+  c.test_index = -401; /* Unique ID */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test Strip Whitespace to Empty...\n");
@@ -528,11 +528,11 @@ static int svtest_run_custom_strip_whitespace_empty(void) {
     return 1;
   }
 
-  // Enable stripping whitespace
+  /* Enable stripping whitespace */
   sv_set_option(t, SV_OPTION_STRIP_WHITESPACE, 1L);
 
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom Strip Whitespace to Empty FAIL - header errors (%d)\n", program, c.header_errors);
@@ -568,15 +568,15 @@ static int svtest_run_custom_crlf_eol(void) {
   svtest_data_set current_test_data = {
       .sep = ',',
       .option = 0,
-      .data = "h1,h2\r\nd1,d2", // Input with CRLF
+      .data = "h1,h2\r\nd1,d2", /* Input with CRLF */
       .expected = expected_custom_crlf_eol,
-      .columns_count = 2, // Expected header columns
-      .rows_count = 1     // Expected data rows
+      .columns_count = 2, /* Expected header columns */
+      .rows_count = 1     /* Expected data rows */
   };
   int rc = 0;
 
   memset(&c, '\0', sizeof(c));
-  c.test_index = -301; // Unique ID
+  c.test_index = -301; /* Unique ID */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test CRLF EOL...\n");
@@ -588,7 +588,7 @@ static int svtest_run_custom_crlf_eol(void) {
   }
 
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom CRLF EOL FAIL - header errors (%d)\n", program, c.header_errors);
@@ -624,15 +624,15 @@ static int svtest_run_custom_ends_with_delimiter(void) {
   svtest_data_set current_test_data = {
       .sep = ',',
       .option = 0,
-      .data = "header1,header2,", // Input ends with a delimiter
+      .data = "header1,header2,", /* Input ends with a delimiter */
       .expected = expected_custom_ends_with_delimiter,
-      .columns_count = 3, // Expected header columns
-      .rows_count = 0     // Expected data rows
+      .columns_count = 3, /* Expected header columns */
+      .rows_count = 0     /* Expected data rows */
   };
   int rc = 0;
 
   memset(&c, '\0', sizeof(c));
-  c.test_index = -204; // Unique ID
+  c.test_index = -204; /* Unique ID */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test Ends With Delimiter...\n");
@@ -644,7 +644,7 @@ static int svtest_run_custom_ends_with_delimiter(void) {
   }
 
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom Ends With Delimiter FAIL - header errors (%d)\n", program, c.header_errors);
@@ -677,20 +677,20 @@ static int svtest_run_custom_ends_with_delimiter(void) {
 static int svtest_run_custom_delimiters_only_file(void) {
   svtest_context c;
   sv *t = NULL;
-  // Initialize current_test_data at declaration
+  /* Initialize current_test_data at declaration */
   svtest_data_set current_test_data = {
       .sep = ',',
       .option = 0,
-      .data = ",,,", // Input: three commas, implying four empty fields
+      .data = ",,,", /* Input: three commas, implying four empty fields */
       .expected = expected_custom_delimiters_only,
-      .columns_count = 4, // Expected header columns (all empty)
-      .rows_count = 0     // Expected data rows (no data lines)
+      .columns_count = 4, /* Expected header columns (all empty) */
+      .rows_count = 0     /* Expected data rows (no data lines) */
   };
   int rc = 0;
 
-  // Initialize context
+  /* Initialize context */
   memset(&c, '\0', sizeof(c));
-  c.test_index = -203; // Unique ID for this custom test
+  c.test_index = -203; /* Unique ID for this custom test */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test Delimiters Only File...\n");
@@ -701,11 +701,11 @@ static int svtest_run_custom_delimiters_only_file(void) {
     return 1;
   }
 
-  // Parse data
+  /* Parse data */
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
-  // Check results
+  /* Check results */
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom Delimiters Only File FAIL - header errors (%d)\n", program, c.header_errors);
     rc = 1;
@@ -714,12 +714,12 @@ static int svtest_run_custom_delimiters_only_file(void) {
     fprintf(stderr, "%s: Test Custom Delimiters Only File FAIL - data errors (%d)\n", program, c.data_errors);
     rc = 1;
   }
-  // c.columns_count is set by header_callback.
+  /* c.columns_count is set by header_callback. */
   if (c.columns_count != current_test_data.columns_count) {
     fprintf(stderr, "%s: Test Custom Delimiters Only File FAIL - got %d header columns, expected %d\n", program, c.columns_count, current_test_data.columns_count);
     rc = 1;
   }
-  // c.rows_count is set by fields_callback.
+  /* c.rows_count is set by fields_callback. */
   if (c.rows_count != current_test_data.rows_count) {
      fprintf(stderr, "%s: Test Custom Delimiters Only File FAIL - saw %d data records, expected %d\n", program, c.rows_count, current_test_data.rows_count);
      rc = 1;
@@ -739,20 +739,20 @@ static int svtest_run_custom_delimiters_only_file(void) {
 static int svtest_run_custom_newlines_only_file(void) {
   svtest_context c;
   sv *t = NULL;
-  // Initialize current_test_data at declaration
+  /* Initialize current_test_data at declaration */
   svtest_data_set current_test_data = {
       .sep = ',',
       .option = 0,
-      .data = "\n\n\n", // Input: three newline characters
+      .data = "\n\n\n", /* Input: three newline characters */
       .expected = NULL,
-      .columns_count = 0, // Expected header columns
-      .rows_count = 0     // Expected data rows (empty lines are not data rows)
+      .columns_count = 0, /* Expected header columns */
+      .rows_count = 0     /* Expected data rows (empty lines are not data rows) */
   };
   int rc = 0;
 
-  // Initialize context
+  /* Initialize context */
   memset(&c, '\0', sizeof(c));
-  c.test_index = -202; // Unique ID for this custom test
+  c.test_index = -202; /* Unique ID for this custom test */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test Newlines Only File...\n");
@@ -763,11 +763,11 @@ static int svtest_run_custom_newlines_only_file(void) {
     return 1;
   }
 
-  // Parse data
+  /* Parse data */
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
-  // Check results
+  /* Check results */
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom Newlines Only File FAIL - header errors (%d)\n", program, c.header_errors);
     rc = 1;
@@ -799,21 +799,21 @@ static int svtest_run_custom_newlines_only_file(void) {
 static int svtest_run_custom_empty_file(void) {
   svtest_context c;
   sv *t = NULL;
-  // Initialize current_test_data at declaration
+  /* Initialize current_test_data at declaration */
   svtest_data_set current_test_data = {
       .sep = ',',
       .option = 0,
-      .data = "", // Empty string for empty file
-      .expected = NULL, // Callbacks should not be invoked for header/data
-      .columns_count = 0, // Expected header columns
-      .rows_count = 0     // Expected data rows
+      .data = "", /* Empty string for empty file */
+      .expected = NULL, /* Callbacks should not be invoked for header/data */
+      .columns_count = 0, /* Expected header columns */
+      .rows_count = 0     /* Expected data rows */
   };
   int rc = 0;
 
-  // Initialize context
+  /* Initialize context */
   memset(&c, '\0', sizeof(c));
-  c.test_index = -201; // Unique ID for this custom test
-  c.expected = &current_test_data; // Point to our specific configuration
+  c.test_index = -201; /* Unique ID for this custom test */
+  c.expected = &current_test_data; /* Point to our specific configuration */
 
   fprintf(stderr, "Running Custom Test Empty File...\n");
 
@@ -823,11 +823,11 @@ static int svtest_run_custom_empty_file(void) {
     return 1;
   }
 
-  // Parse data (empty)
+  /* Parse data (empty) */
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
-  // Check results
+  /* Check results */
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom Empty File FAIL - header errors (%d)\n", program, c.header_errors);
     rc = 1;
@@ -836,12 +836,12 @@ static int svtest_run_custom_empty_file(void) {
     fprintf(stderr, "%s: Test Custom Empty File FAIL - data errors (%d)\n", program, c.data_errors);
     rc = 1;
   }
-  // c.columns_count is set by header_callback. If never called, it remains 0.
+  /* c.columns_count is set by header_callback. If never called, it remains 0. */
   if (c.columns_count != current_test_data.columns_count) {
     fprintf(stderr, "%s: Test Custom Empty File FAIL - got %d header columns, expected %d\n", program, c.columns_count, current_test_data.columns_count);
     rc = 1;
   }
-  // c.rows_count is set by fields_callback. If never called, it remains 0.
+  /* c.rows_count is set by fields_callback. If never called, it remains 0. */
   if (c.rows_count != current_test_data.rows_count) {
      fprintf(stderr, "%s: Test Custom Empty File FAIL - saw %d data records, expected %d\n", program, c.rows_count, current_test_data.rows_count);
      rc = 1;
@@ -851,7 +851,7 @@ static int svtest_run_custom_empty_file(void) {
     fprintf(stderr, "%s: Test Custom Empty File OK\n", program);
   }
 
-  if (c.line) free(c.line); // c.line might be allocated by svtest_line_callback if used
+  if (c.line) free(c.line); /* c.line might be allocated by svtest_line_callback if used */
   sv_free(t);
 
   return rc;
@@ -861,20 +861,20 @@ static int svtest_run_custom_empty_file(void) {
 static int svtest_run_custom_B7(void) {
   svtest_context c;
   sv *t = NULL;
-  // Initialize current_test_data at declaration
+  /* Initialize current_test_data at declaration */
   svtest_data_set current_test_data = {
       .sep = ',',
-      .option = 0, // Options are set manually below
-      .data = "hdr1,hdr2\n\"a,b\",c", // Corrected Input: "a,b" (literal quotes), c
+      .option = 0, /* Options are set manually below */
+      .data = "hdr1,hdr2\n\"a,b\",c", /* Corrected Input: "a,b" (literal quotes), c */
       .expected = expected_custom_B7,
-      .columns_count = 2, // Expected header columns ("hdr1", "hdr2")
-      .rows_count = 1     // Expected data rows (one row: ""a,b"", "c")
+      .columns_count = 2, /* Expected header columns ("hdr1", "hdr2") */
+      .rows_count = 1     /* Expected data rows (one row: ""a,b"", "c") */
   };
   int rc = 0;
 
-  // Initialize context
+  /* Initialize context */
   memset(&c, '\0', sizeof(c));
-  c.test_index = -107; // Unique ID for this custom test
+  c.test_index = -107; /* Unique ID for this custom test */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test B7 (Quote Char NUL - quoting disabled)...\n");
@@ -885,14 +885,14 @@ static int svtest_run_custom_B7(void) {
     return 1;
   }
 
-  // Set custom option: Disable quoting
+  /* Set custom option: Disable quoting */
   sv_set_option(t, SV_OPTION_QUOTE_CHAR, '\0');
 
-  // Parse data
+  /* Parse data */
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
-  // Check results
+  /* Check results */
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom B7 FAIL - header errors (%d)\n", program, c.header_errors);
     rc = 1;
@@ -925,22 +925,22 @@ static int svtest_run_custom_B2(void) {
   svtest_context c;
   sv *t = NULL;
   int rc = 0;
-  // Test data: header 'h', then one row with two fields: "x'y" and "z"
-  // Quoted with ' and ' used as literal via ''
+  /* Test data: header 'h', then one row with two fields: "x'y" and "z" */
+  /* Quoted with ' and ' used as literal via '' */
   const char* test_data_str = "h\n'x''y','z'";
 
   svtest_data_set current_test_data = {
       .sep = ',',
-      .option = 0, // Options are set manually below
+      .option = 0, /* Options are set manually below */
       .data = test_data_str,
       .expected = expected_custom_B2,
-      .columns_count = 1, // Expected header columns ("h")
-      .rows_count = 1     // Expected data rows (one row: "x'y", "z")
+      .columns_count = 1, /* Expected header columns ("h") */
+      .rows_count = 1     /* Expected data rows (one row: "x'y", "z") */
   };
 
-  // Initialize context
+  /* Initialize context */
   memset(&c, '\0', sizeof(c));
-  c.test_index = -102; // Unique ID for this custom test
+  c.test_index = -102; /* Unique ID for this custom test */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test B2 (Custom Quote ', Double Quote ON)...\n");
@@ -951,15 +951,15 @@ static int svtest_run_custom_B2(void) {
     return 1;
   }
 
-  // Set custom options
+  /* Set custom options */
   sv_set_option(t, SV_OPTION_QUOTE_CHAR, '\'');
   sv_set_option(t, SV_OPTION_DOUBLE_QUOTE, 1L);
 
-  // Parse data
+  /* Parse data */
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
-  // Check results
+  /* Check results */
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom B2 FAIL - header errors (%d)\n", program, c.header_errors);
     rc = 1;
@@ -992,20 +992,20 @@ static int svtest_run_custom_A1(void) {
   svtest_context c;
   sv *t = NULL;
   int rc = 0;
-  const char* test_data_str = "h\n\"abc"; // Header "h", Data "abc" (unclosed quote)
+  const char* test_data_str = "h\n\"abc"; /* Header "h", Data "abc" (unclosed quote) */
 
   svtest_data_set current_test_data = {
     .sep = ',',
     .option = 0,
     .data = test_data_str,
     .expected = expected_custom_A1,
-    .columns_count = 1, // Expected header columns
-    .rows_count = 0     // Expected data rows: 0, as unclosed quote invalidates the row
+    .columns_count = 1, /* Expected header columns */
+    .rows_count = 0     /* Expected data rows: 0, as unclosed quote invalidates the row */
   };
 
-  // Initialize context
+  /* Initialize context */
   memset(&c, '\0', sizeof(c));
-  c.test_index = -101; // Unique ID for this custom test
+  c.test_index = -101; /* Unique ID for this custom test */
   c.expected = &current_test_data;
 
   fprintf(stderr, "Running Custom Test A1 (Unclosed Quote EOF)...\n");
@@ -1016,11 +1016,11 @@ static int svtest_run_custom_A1(void) {
     return 1;
   }
 
-  // Parse data
+  /* Parse data */
   sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
-  sv_parse_chunk(t, NULL, 0); // Finalize parsing
+  sv_parse_chunk(t, NULL, 0); /* Finalize parsing */
 
-  // Check results (callbacks modify c.header_errors, c.data_errors, c.columns_count, c.rows_count)
+  /* Check results (callbacks modify c.header_errors, c.data_errors, c.columns_count, c.rows_count) */
   if (c.header_errors != 0) {
     fprintf(stderr, "%s: Test Custom A1 FAIL - header errors (%d)\n", program, c.header_errors);
     rc = 1;
@@ -1033,9 +1033,12 @@ static int svtest_run_custom_A1(void) {
     fprintf(stderr, "%s: Test Custom A1 FAIL - got %d header columns, expected %d\n", program, c.columns_count, current_test_data.columns_count);
     rc = 1;
   }
-  // For data rows, svtest_fields_callback increments c.rows_count.
-  // The check for actual number of rows against expected is implicitly handled by svtest_fields_callback not being called enough times / too many times.
-  // Here we ensure the final count matches.
+  /* For data rows, svtest_fields_callback increments c.rows_count.
+   * The check for actual number of rows against expected is
+   * implicitly handled by svtest_fields_callback not being called
+   * enough times / too many times.  Here we ensure the final count
+   * matches.
+  */
   if (c.rows_count != current_test_data.rows_count) {
      fprintf(stderr, "%s: Test Custom A1 FAIL - saw %d data records, expected %d\n", program, c.rows_count, current_test_data.rows_count);
      rc = 1;
@@ -1100,8 +1103,7 @@ main(int argc, char *argv[])
         break;
       }
     }
-    // Add the custom test call AFTER the loop
-    // Add the custom test call AFTER the loop
+    /* Add the custom test call AFTER the loop */
     if (svtest_run_custom_A1() != 0) {
       rc++;
     }
