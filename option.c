@@ -26,11 +26,12 @@
 #endif
 
 #include <stdarg.h>
+#include <stdlib.h> // For malloc, free
+#include <string.h>
 
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+// #include <stdlib.h> // Now included unconditionally above
 #endif
-#include <string.h>
 
 #include <sv.h>
 #include "sv_internal.h"

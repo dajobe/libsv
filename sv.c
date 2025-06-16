@@ -27,9 +27,10 @@
 
 #include <string.h>
 #include <stdarg.h>
+#include <stdlib.h> // For calloc, free
 
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+// #include <stdlib.h> // Now included unconditionally above
 #endif
 
 #include <sv.h>
