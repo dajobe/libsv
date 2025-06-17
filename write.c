@@ -45,8 +45,9 @@ sv_write_field(sv* t, FILE* fh, const char* field, size_t width)
 {
   int needs_quote = 0;
   const char *p;
+  const char *end = field + width;
 
-  for(p = field; *p ; p++) {
+  for(p = field; p < end ; p++) {
     if(*p == t->field_sep || *p == t->quote_char || *p == t->escape_char ||
        *p == '\r' || *p == '\n') {
       needs_quote = 1;
@@ -55,23 +56,33 @@ sv_write_field(sv* t, FILE* fh, const char* field, size_t width)
   }
 
   if(needs_quote) {
-    fputc(t->quote_char, fh);
-    for(p = field; *p ; p++) {
+    if(fputc(t->quote_char, fh) == EOF)
+      return SV_STATUS_FAILED;
+
+    for(p = field; p < end ; p++) {
       if(*p == t->field_sep || *p == t->quote_char) {
         /* Escape the field separator or quote char */
-        if(*p == t->quote_char && (t->flags & SV_FLAGS_DOUBLE_QUOTE))
-          fputc(*p, fh);
-        else
-          fputc(t->escape_char, fh);
+        if(*p == t->quote_char && (t->flags & SV_FLAGS_DOUBLE_QUOTE)) {
+          if(fputc(*p, fh) == EOF)
+            return SV_STATUS_FAILED;
+        } else {
+          if(fputc(t->escape_char, fh) == EOF)
+            return SV_STATUS_FAILED;
+        }
       } else if(*p == t->escape_char) {
         /* Escape the escape char if defined */
-        fputc(t->escape_char, fh);
+        if(fputc(t->escape_char, fh) == EOF)
+          return SV_STATUS_FAILED;
       }
-      fputc(*p, fh);
+      if(fputc(*p, fh) == EOF)
+        return SV_STATUS_FAILED;
     }
-    fputc(t->quote_char, fh);
-  } else
-    fwrite(field, 1, width, fh);
+    if(fputc(t->quote_char, fh) == EOF)
+      return SV_STATUS_FAILED;
+  } else {
+    if(fwrite(field, 1, width, fh) != width)
+      return SV_STATUS_FAILED;
+  }
 
   return SV_STATUS_OK;
 }
@@ -100,13 +111,27 @@ sv_write_fields(sv *t, FILE* fh, char** fields, size_t *widths, size_t count)
     if(!field)
       break;
 
-    if(i > 0)
-      fputc(t->field_sep, fh);
+    if(i > 0) {
+      if(fputc(t->field_sep, fh) == EOF) {
+        status = SV_STATUS_FAILED;
+        break;
+      }
+    }
 
     width = widths ? widths[i] : strlen(field);
-    sv_write_field(t, fh, field, width);
+    status = sv_write_field(t, fh, field, width);
+    if(status != SV_STATUS_OK)
+      break;
   }
-  fputc('\n', fh);
+  /* Only try to write newline if all previous operations were successful */
+  if(status == SV_STATUS_OK) {
+    if(fputc('\n', fh) == EOF) {
+      status = SV_STATUS_FAILED;
+    }
+  }
+
+  if(fflush(fh) == EOF)
+    status = SV_STATUS_FAILED;
 
   return status;
 }
