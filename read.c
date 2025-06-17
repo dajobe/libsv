@@ -84,11 +84,30 @@ sv_init_fields(sv *t, unsigned int nfields)
 {
   char** cp;
   size_t* sp;
+  size_t num_elements;
 
   if(t->fields_count >= nfields)
     return SV_STATUS_OK;
 
-  cp = (char**)malloc(sizeof(char*) * (nfields + 1));
+  /* Calculate number of elements needed, checking for overflow if
+   * nfields is UINT_MAX and unsigned int is the same size as size_t.
+   */
+  if (nfields == UINT_MAX && (sizeof(unsigned int) == sizeof(size_t))) {
+    return SV_STATUS_NO_MEMORY;
+  }
+  num_elements = (size_t)nfields + 1;
+  /* As an additional safeguard if num_elements became 0 through some
+   * other means for nfields.
+   */
+  if (num_elements == 0) {
+      return SV_STATUS_NO_MEMORY;
+  }
+
+  /* Check for upcoming multiplication overflow for cp allocation */
+  if (num_elements > SIZE_MAX / sizeof(char*)) {
+    return SV_STATUS_NO_MEMORY;
+  }
+  cp = (char**)malloc(sizeof(char*) * num_elements);
   if(!cp)
     goto failed;
   if(t->fields_count > 0) {
@@ -97,7 +116,11 @@ sv_init_fields(sv *t, unsigned int nfields)
   }
   t->fields = cp;
 
-  sp = (size_t*)malloc(sizeof(size_t) * (nfields + 1));
+  /* Check for upcoming multiplication overflow for sp allocation */
+  if (num_elements > SIZE_MAX / sizeof(size_t)) {
+    goto failed;
+  }
+  sp = (size_t*)malloc(sizeof(size_t) * num_elements);
   if(!sp)
     goto failed;
   if(t->fields_count > 0) {
@@ -165,6 +188,11 @@ sv_ensure_fields_buffer_size(sv *t, size_t len)
   if(t->fields_buffer_len + len < t->fields_buffer_size)
     return SV_STATUS_OK;
 
+  /* Integer overflow check for nsize calculation */
+  if (t->fields_buffer_len > (SIZE_MAX - 3) / 4) {
+    return SV_STATUS_NO_MEMORY;
+  }
+
   nsize = (len + t->fields_buffer_len) << 1;
 
 #if defined(SV_DEBUG) && SV_DEBUG > 2
@@ -198,6 +226,11 @@ sv_ensure_line_buffer_size(sv *t, size_t len)
 
   if(t->len + len < t->size)
     return SV_STATUS_OK;
+
+  /* Integer overflow check for nsize calculation */
+  if (t->len > (SIZE_MAX - 3) / 4) {
+    return SV_STATUS_NO_MEMORY;
+  }
 
   nsize = (len + t->len) << 1;
 
@@ -374,6 +407,7 @@ static sv_status_t
 sv_parse_generate_row(sv *t)
 {
   sv_status_t status = SV_STATUS_OK;
+  int i = 0;
 
   if(t->skip_rows_remaining > 0) {
     t->skip_rows_remaining--;
@@ -407,7 +441,6 @@ sv_parse_generate_row(sv *t)
     int nheaders = t->fields_count;
     char** cp;
     size_t* sp;
-    int i;
 
     /* first line and header: turn fields into headers */
     cp = (char**)malloc(sizeof(char*) * (nheaders + 1));
@@ -416,15 +449,18 @@ sv_parse_generate_row(sv *t)
     t->headers = cp;
 
     sp = (size_t*)malloc(sizeof(size_t) * (nheaders + 1));
-    if(!sp)
+    if(!sp) {
+      free(t->headers); /* or free(cp) */
+      t->headers = NULL;
       return SV_STATUS_NO_MEMORY;
+    }
     t->headers_widths = sp;
 
     for(i = 0; i < nheaders; i++) {
       size_t header_width = t->fields_widths[i];
       t->headers[i] = (char*)malloc(header_width + 1);
       if(!t->headers[i])
-        return SV_STATUS_NO_MEMORY;
+        goto header_alloc_failed; /* Jump to cleanup block */
 
       memcpy(t->headers[i], t->fields[i], header_width + 1);
       t->headers_widths[i] = header_width;
@@ -444,6 +480,8 @@ sv_parse_generate_row(sv *t)
       /* got header fields - return them to user */
       status = t->header_callback(t, t->callback_user_data, t->headers,
                                   t->headers_widths, t->headers_count);
+      if(status != SV_STATUS_OK)
+        return status;
     }
   } else {
     /* data */
@@ -452,12 +490,37 @@ sv_parse_generate_row(sv *t)
       /* got data fields - return them to user */
       status = t->data_callback(t, t->callback_user_data, t->fields,
                                 t->fields_widths, t->fields_count);
+      if(status != SV_STATUS_OK)
+        return status;
     }
   }
 
   t->line++;
 
   return status;
+
+header_alloc_failed:
+  /* Free already allocated headers and header arrays */
+
+  if(t->headers) {
+    int current_header_idx;
+
+    /* Free successfully allocated individual header strings */
+    for(current_header_idx = 0; current_header_idx < i; current_header_idx++) {
+      if(t->headers[current_header_idx])
+          free(t->headers[current_header_idx]);
+    }
+    free(t->headers);
+    t->headers = NULL;
+  }
+
+  if (t->headers_widths) {
+    free(t->headers_widths);
+    t->headers_widths = NULL;
+  }
+
+  t->headers_count = 0; /* Ensure count is 0 after failure */
+  return SV_STATUS_NO_MEMORY;
 }
 
 
