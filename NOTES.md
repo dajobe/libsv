@@ -4,7 +4,7 @@
 
 * Unicode encodings
   * [UTF-16](https://en.wikipedia.org/wiki/UTF-16) - Critical for international datasets
-  * [The Absolute Minimum Everyone Working With Data Absolutely, Positively Must Know About File Types, Encoding, Delimiters and Data types (No Excuses!)](https://theonemanitdepartment.wordpress.com/2014/12/15/the-absolute-minimum-everyone-working-with-data-absolutely-positively-must-know-about-file-types-encoding-delimiters-and-data-types-no-excuses/)
+  * [The Absolute Minimum Everyone Working With Data Absolutely, Positively Must Know About File Types, Encoding, Delimiters and Data Types (No Excuses!)](https://theonemanitdepartment.wordpress.com/2014/12/15/the-absolute-minimum-everyone-working-with-data-absolutely-positively-must-know-about-file-types-encoding-delimiters-and-data-types-no-excuses/)
   * [The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)](http://www.joelonsoftware.com/articles/Unicode.html)
 * Field size limit (ruby `field_size_limit`) - Prevents buffer overflows and memory issues with large fields
   * **Security & Stability**: Prevents denial-of-service attacks from malicious CSV files with extremely large fields
@@ -28,6 +28,38 @@
 * Flag for empty line decision: an EOF, single empty field or no field?
 * Allow ';' seps like ',' but for regions where , is in numbers (Excel in NO)
 * ASCII delimited separators ASCII 28-31: 31 field sep, 30 record sep
+
+## Code Quality Assessment ##
+
+**Overall Grade: B+ (Good with room for improvement)**
+
+**Strengths:**
+* Excellent API design and documentation in headers
+* Good memory management and error handling
+* Clean separation of concerns between modules
+* Recent null handling improvements show good design thinking
+
+**Areas for Improvement:**
+* **File sizes**: `read.c` (925 lines) and `svtest.c` (1321 lines) exceed recommended 200-300 line limits
+* **Complexity**: Some parsing logic could be simplified and refactored
+* **Organization**: Large files make maintenance and navigation difficult
+
+**Code Complexity Metrics (lizard analysis):**
+* **High Complexity Functions** (CCN > 15):
+  * `sv_internal_parse_process_char` (CCN: 79, NLOC: 168) - Core parser state machine - **NOTE: This function is actually well-designed and readable despite high CCN. The high complexity reflects the breadth of parsing states handled, not confusing logic. Each switch case is independent and focused.**
+  * `sv_set_option_vararg` (CCN: 47, NLOC: 147) - Option handling switch statement - **NOTE: This function is also well-designed despite high CCN. The complexity comes from handling many different option types in a clean switch statement, each case being focused and independent.**
+  * `sv_parse_generate_row` (CCN: 26, NLOC: 88) - Row generation logic
+  * `sv_write_field` (CCN: 21, NLOC: 39) - Field escaping logic
+* **Large Functions** (NLOC > 100):
+  * `main` functions in example.c (108 lines). This is ok to leave alone as it is an example.
+* `main` functions in svtest.c (90 lines). 
+
+**Recommendations:**
+* Split large files into focused, smaller modules
+* Extract common patterns into utility functions
+* Consider breaking parser into state machine, core parsing, and utilities
+* Refactor high-complexity functions like `sv_internal_parse_process_char`
+* Split option handling by category (parsing, output, null handling)
 
 ## Specifications ##
 
