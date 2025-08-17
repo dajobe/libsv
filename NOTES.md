@@ -2,16 +2,6 @@
 
 ## High Priority (Core Functionality Gaps) ##
 
-* Handle Nulls (missing values): allow at least ,, and ,"", and ,\N, for nulls in CSV (numpy `missing_values`) - Essential for real-world data with missing values
-  * **Highest Priority**: Null values are everywhere - almost every real CSV file has missing data
-  * **Current parsing likely fails**: Library probably treats `,,` as two empty strings rather than recognizing them as null/missing values
-  * **Foundation for other features**: Many other parsing features depend on proper null handling
-  * **Immediate practical impact**: This would fix parsing issues users encounter right away
-  * **Three common null representations**:
-    * `,,` - Empty fields between delimiters
-    * `,""` - Empty quoted fields  
-    * `,\N,` - Explicit null marker (common in some systems)
-  * **numpy `missing_values` reference**: NumPy's CSV parser allows configuring what strings represent missing values (e.g., `missing_values=['', 'NA', 'NULL', '\\N']`) - this library should provide similar configurability
 * Unicode encodings
   * [UTF-16](https://en.wikipedia.org/wiki/UTF-16) - Critical for international datasets
   * [The Absolute Minimum Everyone Working With Data Absolutely, Positively Must Know About File Types, Encoding, Delimiters and Data types (No Excuses!)](https://theonemanitdepartment.wordpress.com/2014/12/15/the-absolute-minimum-everyone-working-with-data-absolutely-positively-must-know-about-file-types-encoding-delimiters-and-data-types-no-excuses/)

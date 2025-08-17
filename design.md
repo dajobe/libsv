@@ -1,20 +1,35 @@
 
-SV New Parser Design
-====================
+SV  Design
+==========
 
 Goals:
+
 * Work character by character
 * Support the [Model for Tabular Data and Metadata on the Web][1]
   from the W3C [CSV on the Web Working Group][2]
 * Handle EOL in fields (bug)
-* Handle Nulls: allow at least ,, and ,"", and ,\N, for nulls in CSV (feature)
+* Handle Nulls: allow at least ,, and ,"", and ,\N, for nulls in CSV
 * Handle Unicode encodings (feature)
 * Handle \ before \r or \n
 * Handle \ as last character. Act as if a newline was given on last line.
 
-## State diagram ##
+Null Value Handling
+-------------------
 
-```
+The library now provides configurable null value detection:
+
+* **Automatic detection**: Empty fields, quoted empty fields, \N, NA, NULL
+* **Custom configuration**: `SV_OPTION_NULL_VALUES` allows users to
+  specify additional null markers 
+* **W3C compliance**: Aligns with Tabular Data Model specification
+  for missing data handling 
+* **Memory management**: Proper cleanup of null value arrays in reset
+  and free operations 
+
+State diagram
+-------------
+
+```ascii
                  Table: list of rows  Row: list of cells    Cell: string
                         encoding           comment string         row number
                                            row number             column number
@@ -42,7 +57,8 @@ Goals:
                        +---------------+    \r +------------+      +--------------+    +---------------+
 ```
 
-## Implementation ##
+Parser Implementation
+---------------------
 
 * State machine
 * Try not to add too many new "classes"
@@ -88,6 +104,8 @@ typedef struct {
   unsigned int contains_ws:1;
   /* eol content flag */
   unsigned int contains_eol:1; /* \r or \n */
+  /* null value flag - indicates this cell represents missing data */
+  unsigned int is_null:1;
 } sv_cell;
 
 
