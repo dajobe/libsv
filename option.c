@@ -158,7 +158,7 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
             break;
           }
           
-          for(i = 0; i < count; i++) {
+          for(i = 0; i < (unsigned int)count; i++) {
             if(null_vals[i]) {
               size_t len = strlen(null_vals[i]);
               t->null_values[i] = (char*)malloc(len + 1);
