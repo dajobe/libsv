@@ -1,23 +1,43 @@
 # Todos #
 
+## High Priority (Core Functionality Gaps) ##
+
+* Handle Nulls (missing values): allow at least ,, and ,"", and ,\N, for nulls in CSV (numpy `missing_values`) - Essential for real-world data with missing values
+  * **Highest Priority**: Null values are everywhere - almost every real CSV file has missing data
+  * **Current parsing likely fails**: Library probably treats `,,` as two empty strings rather than recognizing them as null/missing values
+  * **Foundation for other features**: Many other parsing features depend on proper null handling
+  * **Immediate practical impact**: This would fix parsing issues users encounter right away
+  * **Three common null representations**:
+    * `,,` - Empty fields between delimiters
+    * `,""` - Empty quoted fields  
+    * `,\N,` - Explicit null marker (common in some systems)
+  * **numpy `missing_values` reference**: NumPy's CSV parser allows configuring what strings represent missing values (e.g., `missing_values=['', 'NA', 'NULL', '\\N']`) - this library should provide similar configurability
 * Unicode encodings
-  * [UTF-16](https://en.wikipedia.org/wiki/UTF-16)
+  * [UTF-16](https://en.wikipedia.org/wiki/UTF-16) - Critical for international datasets
   * [The Absolute Minimum Everyone Working With Data Absolutely, Positively Must Know About File Types, Encoding, Delimiters and Data types (No Excuses!)](https://theonemanitdepartment.wordpress.com/2014/12/15/the-absolute-minimum-everyone-working-with-data-absolutely-positively-must-know-about-file-types-encoding-delimiters-and-data-types-no-excuses/)
   * [The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)](http://www.joelonsoftware.com/articles/Unicode.html)
-* Handle Nulls (missing values): allow at least ,, and ,"", and ,\N,
-  for nulls in CSV  (numpy `missing_values`)
-* skip/select initial columns (numpy `usecols`; `skip columns` TDM)
-* convert fields to lower or upper case
-* warn on invalid number of cells in row compared to #headers
-* field size limit (ruby `field_size_limit`)
-* set headers as parameter (ruby `headers` with array): implies no
-  header line
-* skip lines regex (ruby `skip_lines` example is for comments '^#')
-* flag for empty line decision: an EOF, single empty field or no field?
-* allow ';' seps like ',' but for regions where , is in numbers (Excel in NO)
+* Field size limit (ruby `field_size_limit`) - Prevents buffer overflows and memory issues with large fields
+  * **Security & Stability**: Prevents denial-of-service attacks from malicious CSV files with extremely large fields
+  * **Current gap**: Library has no hard limit on individual field sizes - could consume unlimited memory
+  * **Risk**: A single field with gigabytes of data could cause memory exhaustion and crashes
+  * **Existing protections**: Code already has buffer growth logic and integer overflow checks, but no field size caps
+  * **Implementation**: Would set maximum field size (e.g., 1MB, 10MB) and either truncate, skip, or error on oversized fields
+
+## Medium Priority (Data Quality & Usability) ##
+
+* Skip blank rows - rows in which all cells are empty / 0-length (`skipBlankRows` TDM) - Common need when processing real data
+* Warn on invalid number of cells in row compared to #headers - Helps catch malformed data early
+* Skip/select initial columns (numpy `usecols`; `skip columns` TDM) - Common requirement for data preprocessing
+* Original row numbers without skips and headers (`source numbers` of a row in TDM) - Useful for debugging and data lineage
+
+## Future (Nice-to-have) ##
+
+* Convert fields to lower or upper case
+* Set headers as parameter (ruby `headers` with array): implies no header line
+* Skip lines regex (ruby `skip_lines` example is for comments '^#')
+* Flag for empty line decision: an EOF, single empty field or no field?
+* Allow ';' seps like ',' but for regions where , is in numbers (Excel in NO)
 * ASCII delimited separators ASCII 28-31: 31 field sep, 30 record sep
-* Skip blank rows - rows in which all cells are empty / 0-length  (`skipBlankRows` TDM)
-* Original row numbers without skips and headers (`source numbers` of a row in TDM)
 
 ## Specifications ##
 
