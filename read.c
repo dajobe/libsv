@@ -45,7 +45,8 @@ sv_free_fields(sv *t)
     unsigned int i;
 
     for(i = 0; i < t->fields_count; i++)
-      free(t->fields[i]);
+      if(t->fields[i])  /* Safe to free only non-NULL pointers */
+        free(t->fields[i]);
 
     free(t->fields);
     t->fields = NULL;
@@ -75,6 +76,66 @@ sv_free_headers(sv *t)
     free(t->headers_widths);
     t->headers_widths = NULL;
   }
+}
+
+static void
+sv_free_null_values(sv *t)
+{
+  if(t->null_values) {
+    unsigned int i;
+    for(i = 0; i < t->null_values_count; i++) {
+      if(t->null_values[i])
+        free(t->null_values[i]);
+    }
+    free(t->null_values);
+    t->null_values = NULL;
+  }
+  
+  if(t->null_values_lengths) {
+    free(t->null_values_lengths);
+    t->null_values_lengths = NULL;
+  }
+  
+  t->null_values_count = 0;
+}
+
+/* Check if a field matches any configured null values */
+static int
+sv_is_null_value(sv *t, const char* field, size_t field_len)
+{
+  /* Safety check */
+  if(!field || !t)
+    return 0;
+    
+  /* Check configured null values first */
+  if(t->null_values && t->null_values_count > 0) {
+    unsigned int i;
+    for(i = 0; i < t->null_values_count; i++) {
+      if(t->null_values[i] && t->null_values_lengths[i] == field_len) {
+        if(memcmp(t->null_values[i], field, field_len) == 0)
+          return 1;
+      }
+    }
+  }
+  
+  /* Default null detection for common representations */
+  if(field_len == 0) {
+    /* Empty field is always null */
+    return 1;
+  }
+  
+  /* Check for common null markers */
+  if(field_len == 2 && memcmp(field, "NA", 2) == 0) {
+    return 1;
+  }
+  if(field_len == 4 && memcmp(field, "NULL", 4) == 0) {
+    return 1;
+  }
+  if(field_len == 2 && memcmp(field, "\\N", 2) == 0) {
+    return 1;
+  }
+  
+  return 0;
 }
 
 /* Create or expand fields,widths,headers arrays to at least size nfields
@@ -161,6 +222,7 @@ sv_internal_parse_reset(sv* t)
 {
   sv_free_fields(t);
   sv_free_headers(t);
+  sv_free_null_values(t);
 
   if(t->fields_buffer) {
     free(t->fields_buffer);
@@ -354,6 +416,30 @@ sv_parse_save_cell(sv* t)
   } else
     memcpy(s, t->fields_buffer, cell_len);
   s[cell_len] = '\0';
+
+  /* Check if this field is a null value */
+  if(sv_is_null_value(t, s, cell_len)) {
+    /* Null value handling is configurable:
+     * - Default mode: Return empty string "" (preserves backward compatibility)
+     * - Enhanced mode: Return NULL pointer (when SV_OPTION_NULL_HANDLING is enabled)
+     * 
+     * This allows callers to distinguish between empty strings and missing data
+     * while maintaining compatibility with existing code.
+     */
+    free(s);
+    if(t->flags & SV_FLAGS_NULL_HANDLING) {
+      /* Return NULL pointer for missing data */
+      s = NULL;
+      cell_len = 0;
+    } else {
+      /* Return empty string (backward compatibility) */
+      s = (char*)malloc(1);
+      if(!s)
+        return SV_STATUS_NO_MEMORY;
+      s[0] = '\0';
+      cell_len = 0;
+    }
+  }
 
   t->fields[cell_ix] = s;
   t->fields_widths[cell_ix] = cell_len;

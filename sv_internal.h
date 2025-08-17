@@ -33,6 +33,7 @@
 #define SV_FLAGS_STRIP_WHITESPACE  (1<<3)
 /* double a quote to quote it (primarily for ") */
 #define SV_FLAGS_DOUBLE_QUOTE      (1<<4)
+#define SV_FLAGS_NULL_HANDLING     (1<<5)
 
 typedef enum  {
   SV_STATE_UNKNOWN,
@@ -127,6 +128,11 @@ struct sv_s {
 
   /* called with the comment */
   sv_line_callback comment_callback;
+
+  /* null value strings that represent missing data */
+  char** null_values;
+  unsigned int null_values_count;
+  size_t* null_values_lengths;
 };
 
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);

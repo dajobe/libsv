@@ -72,6 +72,11 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   t->skip_rows = 0;
   t->comment_prefix = NULL;
 
+  /* Initialize null values to NULL (no custom null values configured) */
+  t->null_values = NULL;
+  t->null_values_count = 0;
+  t->null_values_lengths = NULL;
+
   sv_reset(t);
 
   return t;

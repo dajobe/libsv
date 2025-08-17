@@ -83,6 +83,8 @@ typedef sv_status_t (*sv_line_callback)(sv *t, void *user_data, const char* line
  * @SV_OPTION_COMMENT_PREFIX: set line comment prefix string; type char*. NUL disables comment (char*)
  * @SV_OPTION_SKIP_ROWS: set the number of rows to skip; type int.
  * @SV_OPTION_COMMENT_CALLBACK: Set comment callback of type #sv_line_callback
+ * @SV_OPTION_NULL_HANDLING: enable null handling to return NULL pointers for missing data; type long
+ * @SV_OPTION_NULL_VALUES: set array of strings that represent null values; type char** array, count
  *
  * Option type
  */
@@ -98,7 +100,9 @@ typedef enum {
   SV_OPTION_ESCAPE_CHAR,
   SV_OPTION_COMMENT_PREFIX,
   SV_OPTION_SKIP_ROWS,
-  SV_OPTION_COMMENT_CALLBACK
+  SV_OPTION_COMMENT_CALLBACK,
+  SV_OPTION_NULL_HANDLING,
+  SV_OPTION_NULL_VALUES
 } sv_option_t;
 
 sv* sv_new(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep);

@@ -123,6 +123,77 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
       }
       break;
 
+    case SV_OPTION_NULL_VALUES:
+      if(1) {
+        char** null_vals = (char**)va_arg(arg, char**);
+        int count = va_arg(arg, int);
+        
+        /* Free existing null values if any */
+        if(t->null_values) {
+          unsigned int i;
+          for(i = 0; i < t->null_values_count; i++) {
+            if(t->null_values[i])
+              free(t->null_values[i]);
+          }
+          free(t->null_values);
+          free(t->null_values_lengths);
+          t->null_values = NULL;
+          t->null_values_count = 0;
+          t->null_values_lengths = NULL;
+        }
+        
+        if(null_vals && count > 0) {
+          unsigned int i;
+          t->null_values = (char**)malloc(sizeof(char*) * count);
+          t->null_values_lengths = (size_t*)malloc(sizeof(size_t) * count);
+          
+          if(!t->null_values || !t->null_values_lengths) {
+            if(t->null_values)
+              free(t->null_values);
+            if(t->null_values_lengths)
+              free(t->null_values_lengths);
+            t->null_values = NULL;
+            t->null_values_lengths = NULL;
+            status = SV_STATUS_NO_MEMORY;
+            break;
+          }
+          
+          for(i = 0; i < count; i++) {
+            if(null_vals[i]) {
+              size_t len = strlen(null_vals[i]);
+              t->null_values[i] = (char*)malloc(len + 1);
+              if(!t->null_values[i]) {
+                /* Cleanup on failure */
+                unsigned int j;
+                for(j = 0; j < i; j++) {
+                  if(t->null_values[j])
+                    free(t->null_values[j]);
+                }
+                free(t->null_values);
+                free(t->null_values_lengths);
+                t->null_values = NULL;
+                t->null_values_lengths = NULL;
+                status = SV_STATUS_NO_MEMORY;
+                break;
+              }
+              memcpy(t->null_values[i], null_vals[i], len + 1);
+              t->null_values_lengths[i] = len;
+            } else {
+              t->null_values[i] = NULL;
+              t->null_values_lengths[i] = 0;
+            }
+          }
+          t->null_values_count = count;
+        }
+      }
+      break;
+
+    case SV_OPTION_NULL_HANDLING:
+      t->flags &= ~SV_FLAGS_NULL_HANDLING;
+      if(va_arg(arg, long))
+        t->flags |= SV_FLAGS_NULL_HANDLING;
+      break;
+
     default:
     case SV_OPTION_NONE:
       status = SV_STATUS_FAILED;
