@@ -223,7 +223,7 @@ svtest_header_callback(sv *t, void *user_data,
   unsigned int column_i;
   svtest_context *c = (svtest_context*)user_data;
 
-  c->columns_count = count;
+  c->columns_count = (int)count;
 
   for(column_i = 0; column_i < count; column_i++) {
     const char* header = fields[column_i];
@@ -352,6 +352,8 @@ svtest_run_test(unsigned int test_index)
 
       case SV_OPTION_STRIP_WHITESPACE:
       case SV_OPTION_SKIP_ROWS:
+      case SV_OPTION_NULL_HANDLING:
+      case SV_OPTION_NULL_VALUES:
         sv_set_option(t, opt, 1L);
         break;
 
@@ -1098,8 +1100,6 @@ static int svtest_run_null_handling_default(void) {
   const char* test_data_str = "a,b,c\n,sat,mat\n";
   
   /* Set up expected data structure that the callbacks need */
-  const char* expected_headers[] = {"a", "b", "c"};
-  const char* expected_data[] = {"", "sat", "mat"};
   const char* expected_all[] = {"a", "b", "c", "", "sat", "mat"};
   
   svtest_data_set current_test_data = {
@@ -1163,9 +1163,6 @@ static int svtest_run_null_handling_enhanced(void) {
   const char* test_data_str = "a,b,c\n,sat,mat\n";
   
   /* Set up expected data structure that the callbacks need */
-  const char* expected_headers[] = {"a", "b", "c"};
-  /* With null handling enabled, empty fields become NULL, so we expect NULL for the first field */
-  const char* expected_data[] = {NULL, "sat", "mat"};
   const char* expected_all[] = {"a", "b", "c", NULL, "sat", "mat"};
   
   svtest_data_set current_test_data = {
