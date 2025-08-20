@@ -1,7 +1,10 @@
 #CC=clang
 #SAN_FLAGS=-fsanitize=address -O1 -fno-omit-frame-pointer
 
-DEBUG_FLAGS=-g3
+WARN_FLAGS=
+#WARN_FLAGS= -Wno-nullability-completeness   -std=c11 -Wall -Wc++-compat -Wextra -Wunused -Waggregate-return -Wbad-function-cast -Wcast-align -Wdeclaration-after-statement -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels -Werror-implicit-function-declaration -Wfloat-equal -Wformat=2 -Wframe-larger-than=4096 -Winit-self -Winline -Wmissing-declarations -Wmissing-format-attribute -Wmissing-noreturn -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wpacked -Wpointer-arith -Wredundant-decls -Wshadow -Wsign-compare -Wstrict-overflow -Wstrict-prototypes -Wswitch-enum -Wunreachable-code -Wwrite-strings -Wno-missing-field-initializers -Wno-system-headers -Wno-unused-parameter -Wswitch-bool -Wlogical-not-parentheses -Wsizeof-array-argument -Wshorten-64-to-32
+
+DEBUG_FLAGS=-g3 $(WARN_FLAGS)
 #DEBUG_FLAGS=-g3 -DSV_DEBUG=3
 
 SVLIB=libsv.a
