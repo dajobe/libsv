@@ -90,3 +90,52 @@ check: $(TESTS)
 	  fi; \
 	done; \
 	exit $$rc
+
+# ------------------------------
+# Fuzzing (Clang + libFuzzer)
+# ------------------------------
+CLANG ?= clang
+LIB_SAN_FLAGS = -fsanitize=address,undefined -fno-omit-frame-pointer -O1 -g
+FUZZ_CFLAGS = -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer -O1 -g
+FUZZ_LDFLAGS = -fsanitize=fuzzer,address,undefined
+
+.PHONY: fuzz-lib fuzz fuzz-clean
+
+# Rebuild the library with clang and sanitizers suitable for fuzzing
+# Avoid nuking fuzz harness objects; clean only library objects
+fuzz-lib:
+	rm -f sv.o option.o write.o read.o libsv.a
+	$(MAKE) -f GNUMakefile CC=$(CLANG) SAN_FLAGS="$(LIB_SAN_FLAGS)" libsv.a
+
+fuzz_sv_parse.o: fuzz_sv_parse.c sv.h
+	$(CLANG) $(FUZZ_CFLAGS) -I. -c -o $@ $<
+
+fuzz_sv_write.o: fuzz_sv_write.c sv.h
+	$(CLANG) $(FUZZ_CFLAGS) -I. -c -o $@ $<
+
+fuzz_sv_parse: fuzz-lib fuzz_sv_parse.o $(SVLIB)
+	$(CLANG) $(FUZZ_CFLAGS) -o $@ fuzz_sv_parse.o $(SVLIB) $(FUZZ_LDFLAGS)
+
+fuzz_sv_write: fuzz-lib fuzz_sv_write.o $(SVLIB)
+	$(CLANG) $(FUZZ_CFLAGS) -o $@ fuzz_sv_write.o $(SVLIB) $(FUZZ_LDFLAGS)
+
+fuzz: fuzz_sv_parse fuzz_sv_write
+
+fuzz-clean:
+	rm -f fuzz_sv_parse fuzz_sv_write fuzz_sv_parse.o fuzz_sv_write.o
+
+# Convenience run targets
+FUZZ_TIMEOUT ?= 10
+FUZZ_TIME ?= 60
+FUZZ_DICT ?= dicts/csv.dict
+PARSE_CORPUS ?= corpus/parse
+WRITE_CORPUS ?= corpus/write
+
+.PHONY: fuzz-parse-run fuzz-write-run
+
+fuzz-parse-run: fuzz_sv_parse
+	./fuzz_sv_parse -timeout=$(FUZZ_TIMEOUT) -max_total_time=$(FUZZ_TIME) -dict=$(FUZZ_DICT) $(PARSE_CORPUS)
+
+fuzz-write-run: fuzz_sv_write
+	./fuzz_sv_write -timeout=$(FUZZ_TIMEOUT) -max_total_time=$(FUZZ_TIME) -dict=$(FUZZ_DICT) $(WRITE_CORPUS)
+

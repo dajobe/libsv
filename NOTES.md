@@ -123,3 +123,176 @@ from the W3C [CSV on the Web Working Group][2]
 [7]: http://dataprotocols.org/csv-dialect/
 [8]: http://www.w3.org/TR/tabular-metadata/
 [9]: http://www.w3.org/ns/csvw
+
+## Recent Evaluation (2025-08-23)
+
+* Build/test status: Clean build, all tests pass locally using GNUMakefile.
+* Recommendations:
+  * Enable compiler warnings by default (-Wall -Wextra -Wformat=2 -Wshadow -Wstrict-prototypes) and wire CI to treat warnings as errors.
+  * Implement BOM/encoding handling (at least UTF-8 BOM detection/stripping) or document current behavior explicitly.
+  * Broaden allowed separators beyond ',' and '\t' (e.g., ';'), or document limitation.
+  * Writer NULL semantics: treat NULL fields as empty during output rather than truncating the row, or make it configurable.
+  * Add fuzzing with libFuzzer + sanitizers (ASan/UBSan) for the parser and writer.
+  * Run static analysis regularly (clang --analyze) in CI.
+
+## Fuzzing Plan (libFuzzer)
+
+libFuzzer is a coverage-guided fuzzing engine built into Clang. It repeatedly mutates inputs to maximize code coverage and uncover crashes, OOMs, and undefined behavior. It works best when combined with AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan).
+
+Targets
+
+1) Parser target (fuzz_sv_parse)
+   * Entry: LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
+   * Behavior:
+     * Create an sv instance with randomized options derived from the input prefix (e.g., first few bytes encode sep, quote, escape, flags). Fall back to safe defaults if invalid.
+     * Feed the remaining bytes to sv_parse_chunk in both whole and chunked modes (e.g., random chunk sizes) and finalize with sv_parse_chunk(NULL, 0).
+     * Use no-op but robust callbacks that tolerate NULL fields and arbitrary widths (validate invariants but avoid heavy allocation).
+   * Invariants to assert: no crashes, no memory leaks (ASan), no UB (UBSan). Optionally, enforce that the state machine never returns an error unless input is malformed and strict-mode is on.
+
+2) Writer target (fuzz_sv_write)
+   * Generate small arrays of fields/widths from input. Include cases with NULL pointers, embedded separators, quotes, escapes, CR/LF, long fields.
+   * Call sv_write_fields to a tmpfile or open_memstream equivalent; verify it returns success or fails gracefully without crashing.
+
+Seed corpus and dictionary
+
+* Seed with existing small CSV/TSV examples and edge cases from the test suite (e.g., quotes, CRLF, empty fields, NA, NULL, \\N).
+* Pull samples from csv-spectrum.
+* Dictionary tokens: ',', '\t', ';', '"', '\n', '\r\n', '\\', 'NA', 'NULL', '\\N', "''".
+
+Build integration
+
+* Add a dedicated fuzz build using Clang and libFuzzer with sanitizers.
+* Example GNUMakefile additions:
+
+```make
+FUZZ_CFLAGS = -O1 -g -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer
+FUZZ_LDFLAGS = -fsanitize=fuzzer,address,undefined
+
+fuzz_sv_parse: fuzz_sv_parse.o libsv.a
+ $(CC) $(FUZZ_CFLAGS) -I. -o $@ $^ $(FUZZ_LDFLAGS)
+
+fuzz_sv_write: fuzz_sv_write.o libsv.a
+ $(CC) $(FUZZ_CFLAGS) -I. -o $@ $^ $(FUZZ_LDFLAGS)
+
+# Generic rule
+%.o: %.c
+ $(CC) $(FUZZ_CFLAGS) -I. -c -o $@ $<
+```
+
+Harness skeletons
+
+* fuzz_sv_parse.c:
+
+```c
+#include <stdint.h>
+#include <stdlib.h>
+#include <sv.h>
+
+static sv_status_t noop_header(sv* t, void* u, char** f, size_t* w, size_t c){ return SV_STATUS_OK; }
+static sv_status_t noop_data(sv* t, void* u, char** f, size_t* w, size_t c){ return SV_STATUS_OK; }
+
+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  if (!data || size == 0) return 0;
+  // Derive simple options from the first few bytes
+  char sep = (data[0] % 3 == 0) ? ',' : (data[0] % 3 == 1) ? '\t' : ';';
+  sv* t = sv_new(NULL, noop_header, noop_data, sep);
+  if (!t) return 0;
+
+  // Optional: randomize a few options
+  // sv_set_option(t, SV_OPTION_STRIP_WHITESPACE, (long)(data[1] & 1));
+  // sv_set_option(t, SV_OPTION_NULL_HANDLING, (long)(data[2] & 1));
+
+  // Feed data in chunks
+  const size_t header = 4 < size ? 4 : size;
+  const uint8_t* p = data + header;
+  size_t remain = size - header;
+  while (remain > 0) {
+    size_t chunk = (remain > 32) ? (data[3] % 32) + 1 : remain;
+    (void)sv_parse_chunk(t, (char*)p, chunk);
+    p += chunk;
+    remain -= chunk;
+  }
+  (void)sv_parse_chunk(t, NULL, 0);
+  sv_free(t);
+  return 0;
+}
+```
+
+* fuzz_sv_write.c:
+
+```c
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <sv.h>
+
+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  if (!data) return 0;
+  sv* t = sv_new(NULL, NULL, NULL, ',');
+  if (!t) return 0;
+
+  // Build up to N small fields from input, include some NULLs
+  enum { N = 8 };
+  char* fields[N] = {0};
+  size_t widths[N] = {0};
+  size_t i = 0, off = 0;
+  while (i < N && off < size) {
+    size_t len = (size - off > 16) ? (data[off] % 16) : (size - off);
+    if (off + len > size) len = size - off;
+    if ((data[off] & 3) == 0) {
+      fields[i] = NULL; widths[i] = 0; // exercise NULL behavior
+    } else {
+      fields[i] = (char*)malloc(len + 1);
+      if (!fields[i]) break;
+      memcpy(fields[i], data + off, len);
+      fields[i][len] = '\0';
+      widths[i] = len;
+    }
+    off += len ? len : 1;
+    i++;
+  }
+
+  FILE* fh = fopen("/dev/null", "w");
+  if (fh) {
+    (void)sv_write_fields(t, fh, fields, widths, i);
+    fclose(fh);
+  }
+
+  for (size_t j = 0; j < i; j++) free(fields[j]);
+  sv_free(t);
+  return 0;
+}
+```
+
+How to run locally
+
+* Build: CC=clang make -f GNUMakefile fuzz_sv_parse fuzz_sv_write
+* Run: ./fuzz_sv_parse -max_total_time=300 -timeout=10 corpus/parse
+* Run: ./fuzz_sv_write -max_total_time=300 -timeout=10 corpus/write
+* Use -jobs and -workers for parallel runs; add -dict=dict.txt for token guidance.
+
+CI integration
+
+* Add a GitHub Actions job that builds the fuzzers with Clang and runs each for ~5 minutes on push/PR.
+* Artifacts: upload any crashers/minimized reproducers from the fuzz run.
+
+OSS-Fuzz (optional)
+
+* Create a minimal Dockerfile and build script; register the project with OSS-Fuzz for continuous large-scale fuzzing.
+
+Triage and regression
+
+* On crash: use -minimize_crash=1 to shrink inputs; add the minimized input to the seed corpus and/or convert into a unit test in svtest.c.
+* Tag findings with CVE-style notes if they are memory-safety relevant; fix with tests before closing.
+
+Milestones
+
+[ ] Land harnesses + make targets, seed corpus, enable ASan/UBSan; 5 min CI fuzz smoke.
+[ ] Expand corpora (csv-spectrum), add dictionary, fix any found issues; wire strict-mode quote checks.
+[ ] Consider field size limits, separator expansion, BOM handling; pursue OSS-Fuzz.
+
+Acceptance criteria
+
+* Fuzzers run clean for 10k+ exec/s locally with no crashes for 10+ minutes.
+* CI smoke fuzz completes within 5 minutes with zero findings.
+* All discovered issues have tests and are closed.
