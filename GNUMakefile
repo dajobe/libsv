@@ -133,11 +133,14 @@ FUZZ_DICT ?= dicts/csv.dict -dict=dicts/csv.recommended.dict
 PARSE_CORPUS ?= corpus/parse
 WRITE_CORPUS ?= corpus/write
 
-.PHONY: fuzz-parse-run fuzz-write-run
+.PHONY: fuzz-parse-run fuzz-write-run artifacts
 
-fuzz-parse-run: fuzz_sv_parse
-	./fuzz_sv_parse -timeout=$(FUZZ_TIMEOUT) -max_total_time=$(FUZZ_TIME) -dict=$(FUZZ_DICT) $(PARSE_CORPUS)
+artifacts:
+	mkdir -p artifacts
 
-fuzz-write-run: fuzz_sv_write
-	./fuzz_sv_write -timeout=$(FUZZ_TIMEOUT) -max_total_time=$(FUZZ_TIME) -dict=$(FUZZ_DICT) $(WRITE_CORPUS)
+fuzz-parse-run: fuzz_sv_parse artifacts
+	./fuzz_sv_parse -timeout=$(FUZZ_TIMEOUT) -max_total_time=$(FUZZ_TIME) -artifact_prefix=artifacts/ -dict=$(FUZZ_DICT) $(PARSE_CORPUS)
+
+fuzz-write-run: fuzz_sv_write artifacts
+	./fuzz_sv_write -timeout=$(FUZZ_TIMEOUT) -max_total_time=$(FUZZ_TIME) -artifact_prefix=artifacts/ -dict=$(FUZZ_DICT) $(WRITE_CORPUS)
 
