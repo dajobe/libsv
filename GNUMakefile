@@ -127,7 +127,9 @@ fuzz-clean:
 # Convenience run targets
 FUZZ_TIMEOUT ?= 10
 FUZZ_TIME ?= 60
-FUZZ_DICT ?= dicts/csv.dict
+# You can include multiple dictionaries by setting FUZZ_DICT to
+# something like: "dicts/csv.dict -dict=dicts/csv.recommended.dict"
+FUZZ_DICT ?= dicts/csv.dict -dict=dicts/csv.recommended.dict
 PARSE_CORPUS ?= corpus/parse
 WRITE_CORPUS ?= corpus/write
 
