@@ -137,6 +137,7 @@ Flags you might try
 Seeds and dictionary
 - Seeds: see `corpus/parse` and `corpus/write` for initial cases.
 - Dictionary: `dicts/csv.dict` contains common CSV/TSV tokens.
+- See [NOTES.md](file:///Users/dajobe/dev/redland/libsv/NOTES.md) for current fuzzing status and remaining TODOs.
 
 Dave Beckett
-<https://www.dajobe.org/>
+ <https://www.dajobe.org/>
