@@ -1,3 +1,15 @@
+/*
+ * fuzz_sv_write.c - libFuzzer harness for libsv writer
+ *
+ * Purpose:
+ *  - Exercise the CSV writer with diverse field arrays, including NULLs
+ *    and special characters, to catch crashes and sanitizer issues.
+ *
+ * Notes:
+ *  - Current writer semantics: a NULL field pointer stops writing the row.
+ *    This harness intentionally includes NULLs to exercise that path.
+ *  - Consider changing writer behavior to serialize NULL as empty if desired.
+ */
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +26,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   char* fields[N] = {0};
   size_t widths[N] = {0};
 
+  /* Build up to N fields from input; include some NULLs deliberately */
   size_t i = 0, off = 0;
   while (i < N && off < size) {
     size_t len = (size - off > 16) ? (data[off] % 16) : (size - off);
@@ -32,6 +45,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     i++;
   }
 
+  /* Write to /dev/null; on non-Unix systems, this may need a tweak */
   FILE* fh = fopen("/dev/null", "w");
   if (fh) {
     (void)sv_write_fields(t, fh, fields, widths, i);

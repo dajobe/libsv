@@ -95,5 +95,48 @@ Example
 
 See `example.c` for API use.
 
+Developer: Fuzzing
+------------------
+
+This section is for developers.
+
+Requirements
+- Clang with libFuzzer and sanitizers (ASan/UBSan). On macOS, use Homebrew LLVM clang; on Linux, install an LLVM toolchain (not a stripped distro clang).
+
+Make targets
+- Build fuzzers and rebuild the library with sanitizers:
+  - `make -f GNUMakefile fuzz`
+- Run with defaults (60s, dict and seed corpora):
+  - `make -f GNUMakefile fuzz-parse-run`
+  - `make -f GNUMakefile fuzz-write-run`
+- Clean fuzz artifacts:
+  - `make -f GNUMakefile fuzz-clean`
+
+Useful variables (override on the command line)
+- `CLANG=/path/to/clang` (e.g., `$(brew --prefix llvm)/bin/clang`)
+- `FUZZ_TIME=300` `FUZZ_TIMEOUT=15`
+- `FUZZ_DICT=dicts/csv.dict`
+- `PARSE_CORPUS=corpus/parse` `WRITE_CORPUS=corpus/write`
+
+Examples
+```sh
+# Use Homebrew clang on macOS
+CLANG=$(brew --prefix llvm)/bin/clang make -f GNUMakefile fuzz-parse-run
+
+# Longer run and custom corpus
+FUZZ_TIME=600 PARSE_CORPUS=corpus/parse CLANG=$(which clang) \
+  make -f GNUMakefile fuzz-parse-run
+```
+
+Flags you might try
+- `-use_value_profile=1` (better coverage on comparisons)
+- `-jobs=N -workers=N` (parallel fuzzing)
+- `-rss_limit_mb=4096` (limit memory)
+- `-print_final_stats=1` (end-of-run stats)
+
+Seeds and dictionary
+- Seeds: see `corpus/parse` and `corpus/write` for initial cases.
+- Dictionary: `dicts/csv.dict` contains common CSV/TSV tokens.
+
 Dave Beckett
 <https://www.dajobe.org/>
