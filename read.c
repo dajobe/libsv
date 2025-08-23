@@ -412,9 +412,12 @@ sv_parse_save_cell(sv* t)
 
     while(cell_len > 0 && isspace(f[cell_len - 1]))
       cell_len--;
-    memcpy(s, f, cell_len);
-  } else
-    memcpy(s, t->fields_buffer, cell_len);
+    if(cell_len > 0)
+      memcpy(s, f, cell_len);
+  } else {
+    if(cell_len > 0 && t->fields_buffer)
+      memcpy(s, t->fields_buffer, cell_len);
+  }
   s[cell_len] = '\0';
 
   /* Check if this field is a null value */
@@ -548,7 +551,10 @@ sv_parse_generate_row(sv *t)
       if(!t->headers[i])
         goto header_alloc_failed; /* Jump to cleanup block */
 
-      memcpy(t->headers[i], t->fields[i], header_width + 1);
+      if(header_width > 0 && t->fields[i])
+        memcpy(t->headers[i], t->fields[i], header_width + 1);
+      else
+        t->headers[i][0] = '\0';
       t->headers_widths[i] = header_width;
     }
     t->headers_count = nheaders;
