@@ -126,6 +126,10 @@ static const char* expected_custom_ends_with_delimiter[] = {"header1", "header2"
 static const char* expected_custom_crlf_eol[] = {"h1", "h2", "d1", "d2"};
 static const char* expected_custom_strip_ws_empty[] = {"h1", "h2", "h3", "", "", "xyz"};
 static const char* expected_custom_skip_comment_interaction[] = {"Header1", "Header2", "Data1", "Data2"};
+/* Regression: header null handling with SV_OPTION_NULL_HANDLING enabled
+ * Expect empty string for null header field
+ */
+static const char* expected_custom_header_null_enhanced[] = {"a", "", "c", "x", "y", "z"};
 
 
 static const svtest_data_set svtest_data[N_TESTS + 1] = {
@@ -1222,6 +1226,67 @@ static int svtest_run_null_handling_enhanced(void) {
   return rc;
 }
 
+/* Regression: header null in first line with NULL_HANDLING enabled.
+ * Expect header[1] == "" (empty), not a crash or NULL pointer.
+ */
+static int svtest_run_header_null_handling_enhanced(void) {
+  svtest_context c;
+  sv *t = NULL;
+  int rc = 0;
+  const char* test_data_str = "a,,c\n" "x,y,z\n"; /* Header has empty middle field */
+
+  svtest_data_set current_test_data = {
+    .sep = ',',
+    .option = 0,
+    .data = test_data_str,
+    .expected = expected_custom_header_null_enhanced,
+    .columns_count = 3,
+    .rows_count = 1
+  };
+
+  fprintf(stderr, "Running Test: Header Null Handling (Enhanced)...\n");
+
+  memset(&c, '\0', sizeof(c));
+  c.test_index = 142; /* Regression test */
+  c.expected = &current_test_data;
+
+  t = sv_new(&c, svtest_header_callback, svtest_fields_callback, ',');
+  if (!t) {
+    fprintf(stderr, "%s: Test Header Null Handling (Enhanced) FAIL - sv_new() failed\n", program);
+    return 1;
+  }
+
+  sv_set_option(t, SV_OPTION_NULL_HANDLING, 1L);
+
+  sv_parse_chunk(t, (char*)current_test_data.data, strlen(current_test_data.data));
+  sv_parse_chunk(t, NULL, 0);
+
+  if (c.header_errors != 0) {
+    fprintf(stderr, "%s: Test Header Null Handling (Enhanced) FAIL - header errors (%d)\n", program, c.header_errors);
+    rc = 1;
+  }
+  if (c.data_errors != 0) {
+    fprintf(stderr, "%s: Test Header Null Handling (Enhanced) FAIL - data errors (%d)\n", program, c.data_errors);
+    rc = 1;
+  }
+  if (c.columns_count != 3) {
+    fprintf(stderr, "%s: Test Header Null Handling (Enhanced) FAIL - got %d header columns, expected 3\n", program, c.columns_count);
+    rc = 1;
+  }
+  if (c.rows_count != 1) {
+    fprintf(stderr, "%s: Test Header Null Handling (Enhanced) FAIL - saw %d data rows, expected 1\n", program, c.rows_count);
+    rc = 1;
+  }
+
+  if (rc == 0) {
+    fprintf(stderr, "%s: Test Header Null Handling (Enhanced) OK\n", program);
+  }
+
+  if (c.line) free(c.line);
+  sv_free(t);
+  return rc;
+}
+
 #define MAX_TEST_INDEX (N_TESTS-1)
 
 int
@@ -1307,6 +1372,9 @@ main(int argc, char *argv[])
       rc++;
     }
     if (svtest_run_null_handling_enhanced() != 0) {
+      rc++;
+    }
+    if (svtest_run_header_null_handling_enhanced() != 0) {
       rc++;
     }
   }
