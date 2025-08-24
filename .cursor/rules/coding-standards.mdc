@@ -1,0 +1,59 @@
+---
+description: Coding standards and development practices
+globs:
+alwaysApply: true
+---
+
+# Coding Standards and Development Practices
+
+## Code Style
+
+- ANSI C with 2-space indentation (`c-basic-offset: 2`)
+- Use callback-based architecture for data processing
+- Function naming: `sv_*` prefix for public API
+- Type naming: `sv_*_t` suffix for enums/typedefs
+- Error handling via `sv_status_t` enum return values
+- Memory management: caller responsible for cleanup
+- Include guards: conditional compilation with `#ifdef SV_CONFIG`
+- Headers: system includes first, then `<sv.h>`, then internal headers
+
+## Code Organization
+
+- Keep files under 200-300 lines; refactor when exceeding this limit
+- Use clear, descriptive function and variable names
+- Follow the established patterns in [sv.c](mdc:sv.c) and [sv_internal.h](mdc:sv_internal.h)
+
+## Header Organization
+
+- System includes first
+- Then `<sv.h>`
+- Then internal headers from [sv_internal.h](mdc:sv_internal.h)
+- Reference [AGENTS.md](mdc:AGENTS.md) for detailed header ordering
+
+## Testing Requirements
+
+- Write thorough tests for all major functionality in [svtest.c](mdc:svtest.c)
+- Test both parsing and writing paths
+- Include edge cases from [corpus/](mdc:corpus/) test data
+- Run fuzzing campaigns regularly to discover new edge cases
+
+## Error Handling
+
+- Use the `sv_status_t` return type for consistent error reporting
+- Handle memory allocation failures gracefully
+- Validate input parameters thoroughly
+- Test error conditions in the test suite
+
+## Memory Management
+
+- Use the established memory management patterns from [sv.c](mdc:sv.c)
+- Free allocated resources in error paths
+- Avoid memory leaks in the parser and writer
+- Test memory edge cases with fuzzing
+
+## Documentation
+
+- Keep [design.md](mdc:design.md) updated with architectural decisions
+- Document API changes in [sv.h](mdc:sv.h)
+- Update [NOTES.md](mdc:NOTES.md) with development insights
+- Maintain clear commit messages following project conventions

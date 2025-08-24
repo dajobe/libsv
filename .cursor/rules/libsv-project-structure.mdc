@@ -1,0 +1,37 @@
+---
+description: Project structure guide.
+globs:
+alwaysApply: true
+---
+
+# libsv Project Structure Guide
+
+## Core Library Files
+
+- [sv.h](mdc:sv.h) - Main public header with CSV/TSV parsing and writing API
+- [sv.c](mdc:sv.c) - Core implementation of the CSV/TSV parser and writer
+- [sv_internal.h](mdc:sv_internal.h) - Internal structures and helper functions
+- [read.c](mdc:read.c) - CSV/TSV reading and parsing functionality
+- [write.c](mdc:write.c) - CSV/TSV writing and serialization functionality
+- [option.c](mdc:option.c) - Configuration and option handling
+
+## Testing and Development
+
+- [svtest.c](mdc:svtest.c) - Comprehensive test suite for the library
+- [fuzz_sv_parse.c](mdc:fuzz_sv_parse.c) - libFuzzer harness for parser testing
+- [fuzz_sv_write.c](mdc:fuzz_sv_write.c) - libFuzzer harness for writer testing
+- [corpus/](mdc:corpus/) - Test data files for various CSV/TSV formats
+- [dicts/](mdc:dicts/) - Fuzzing dictionaries for improved test coverage
+
+## Build and Configuration
+
+- [GNUMakefile](mdc:GNUMakefile) - Main build configuration with fuzzing targets
+- [Makefile.am](mdc:Makefile.am) - Automake configuration
+- [design.md](mdc:design.md) - Architecture and design decisions
+- [NOTES.md](mdc:NOTES.md) - Development notes and guidelines
+
+## Key Directories
+
+- `corpus/parse/` - Input test files for parser testing
+- `corpus/write/` - Expected output files for writer testing
+- `dicts/` - Fuzzing dictionaries (csv.dict, csv.recommended.dict)

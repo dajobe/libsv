@@ -1,0 +1,39 @@
+---
+description: Fuzzing Guidelines - how to maintain fuzzing dictionaries, their pattern categories and formats.
+globs: *.{c,h}
+alwaysApply: false
+---
+
+# Fuzzing Guidelines and Dictionary Management
+
+## Dictionary Files
+
+- [dicts/csv.dict](mdc:dicts/csv.dict) - Basic dictionary with fundamental CSV patterns
+- [dicts/csv.recommended.dict](mdc:dicts/csv.recommended.dict) - Comprehensive dictionary with high-value fuzzing patterns
+
+## Dictionary Format
+
+- Use hex notation (`\x00`) for binary data, not octal
+- Quote all entries: `"pattern"`
+- Group related patterns with `#` comments
+- Organize by pattern type: separators, CSV values, binary patterns, edge cases
+
+## Fuzzing Harnesses
+
+- [fuzz_sv_parse.c](mdc:fuzz_sv_parse.c) - Tests CSV/TSV parsing with chunked input
+- [fuzz_sv_write.c](mdc:fuzz_sv_write.c) - Tests CSV writing with diverse field arrays
+
+## Dictionary Maintenance
+
+- Add new high-usage patterns from fuzzing results
+- Remove duplicates and consolidate similar patterns
+- Group patterns logically for better libFuzzer performance
+- Update after significant fuzzing campaigns
+
+## Pattern Categories
+
+1. **Basic separators**: `,`, `\t`, `;`, quotes, newlines
+2. **Common CSV values**: `NA`, `NULL`, `\N`, empty fields
+3. **Binary patterns**: null bytes, pointer-like sequences
+4. **Edge cases**: boundary conditions, special characters
+5. **High-usage patterns**: patterns with 10K+ uses from fuzzing
