@@ -194,6 +194,13 @@ sv_set_option_vararg(sv* t, sv_option_t option, va_list arg)
         t->flags |= SV_FLAGS_NULL_HANDLING;
       break;
 
+    case SV_OPTION_FIELD_SIZE_LIMIT:
+      if(1) {
+        size_t s = va_arg(arg, size_t);
+        t->field_size_limit = s;
+      }
+      break;
+
     default:
     case SV_OPTION_NONE:
       status = SV_STATUS_FAILED;

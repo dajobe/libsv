@@ -1,33 +1,22 @@
+# libsv Design
 
-SV  Design
-==========
+This document outlines the design and architecture of the `libsv` library.
 
-Goals:
+## Core Principles
 
-* Work character by character
-* Support the [Model for Tabular Data and Metadata on the Web][1]
-  from the W3C [CSV on the Web Working Group][2]
-* Handle EOL in fields (bug)
-* Handle Nulls: allow at least ,, and ,"", and ,\N, for nulls in CSV
-* Handle Unicode encodings (feature)
-* Handle \ before \r or \n
-* Handle \ as last character. Act as if a newline was given on last line.
+The library is designed around the following core principles:
 
-Null Value Handling
--------------------
+* **Character-by-Character Processing:** The parser operates on a stream of characters, making it suitable for a wide range of input sources.
+* **Memory Efficiency:** It uses a callback-based API, which avoids loading the entire file into memory. This allows it to handle very large files with a small memory footprint.
+* **Flexibility:** The library provides a rich set of options to control parsing behavior, including custom delimiters, quoting, and error handling.
 
-The library now provides configurable null value detection:
+## Parsing Logic
 
-* **Automatic detection**: Empty fields, quoted empty fields, \N, NA, NULL
-* **Custom configuration**: `SV_OPTION_NULL_VALUES` allows users to
-  specify additional null markers 
-* **W3C compliance**: Aligns with Tabular Data Model specification
-  for missing data handling 
-* **Memory management**: Proper cleanup of null value arrays in reset
-  and free operations 
+The core of the parser is a state machine that processes input one character at a time. This approach allows it to correctly handle complex cases like quoted fields, escaped characters, and newlines within fields.
 
-State diagram
--------------
+### State Diagram
+
+The following diagram illustrates the basic flow of the parser's state machine:
 
 ```ascii
                  Table: list of rows  Row: list of cells    Cell: string
@@ -36,15 +25,16 @@ State diagram
      +=======+
      ||START||
      +=======+
+         |
          |                                       +-------+                 +------------------+
          |                                       |       |Delim            |                  |
          v                                       v       +(empty field)    v                  +
- +----------------+    +---------------+       +-----------+       +---------------+   +---------------+
+ +----------------+    +---------------+       +-----------+       +---------------+   +---------------+ 
  |Start file      |    |Start record   |No EOL |Start field| Quote |In Quoted Field|   |Esc in quoted  |
  |----------------|    |---------------|------>|-----------|>----->|---------------|ESC|---------------|
  |Look for BOM    |--->|               | #     |           | else  |trim ws        |+->|               |
  |and set encoding|    |               |>--+   |           |>---+  |               |   |               |
- +----------------+    +--+------------+   |   +-----------+    |  +---------------+   +---------------+
+ +----------------+    +--+------------+   |   +-----------+    |  +---------------+   +---------------+ 
                           |    ^  ^ ^      |      EOL v         |
                         \r|    |  | +---------+ (empty|field)   |          +------------------+
                           |    +--------------|-------|         |          |                  |
@@ -54,100 +44,27 @@ State diagram
                   |    |---------------|   |   |------------|   +->|--------------|ESC |---------------|
                   |  \r|Handle \r\n as |   +-->|Save content|      |trim ws       |+-->|               |
                   +----|one line       |<------|            |      |              |    |               |
-                       +---------------+    \r +------------+      +--------------+    +---------------+
+                       +---------------+    \r +------------+      +--------------+    +---------------+ 
 ```
 
-Parser Implementation
----------------------
+## Key Features
 
-* State machine
-* Try not to add too many new "classes"
+### Callback-based API
 
-Code sketch of data model and flags.
+Instead of returning a fully parsed data structure, `libsv` uses callbacks to deliver data to the application. The user provides function pointers for handling header rows and data rows. This approach is highly memory-efficient and allows the application to process data as it is being parsed.
 
-```c
-typedef enum  {
-  SV_STATE_UNKNOWN,
-  /* After a reset and before any potential BOM */
-  SV_STATE_START_FILE,
-  /* After any BOM and expecting record start */
-  SV_STATE_START_RECORD,
-  /* Accepted \r; handle \r\n as 1 EOL */
-  SV_STATE_CR,
-  /* Accepted # - read a commented row up to EOL */
-  SV_STATE_COMMENT,
-  /* Starting a cell */
-  SV_STATE_IN_CELL,
-  /* Accepted escape-char in a cell */
-  SV_STATE_ESC_IN_CELL,
-  /* Accepted quote-char starting a cell */
-  SV_STATE_IN_QUOTED_CELL,
-  /* Accepted escape-char in a quoted cell */
-  SV_STATE_ESC_IN_QUOTED_CELL,
-} sv_parse_state;
+### Null Value Handling
 
+The library provides flexible and configurable null value detection:
 
-typedef struct {
-  /* string, "" for empty cell (@len = 0) or NULL for null (@len = 0) */
-  unsigned char* value;
-  /* size of string above or NULL for null value */
-  size_t len;
-  /* this column was skipped */
-  unsigned int is_skipped:1;
-  /* content flags */
-  unsigned int contains_quote:1;
-  unsigned int contains_delimiter:1;
-  /* whitespace (' ', \t, \v) content flags */
-  unsigned int contains_leading_ws:1;
-  unsigned int contains_trailing_ws:1;
-  /* if the delimiter is ws, will be same as @contains_delimiter */
-  unsigned int contains_ws:1;
-  /* eol content flag */
-  unsigned int contains_eol:1; /* \r or \n */
-  /* null value flag - indicates this cell represents missing data */
-  unsigned int is_null:1;
-} sv_cell;
+* **Automatic Detection:** By default, it recognizes common representations of null values, such as empty fields (`,,`), quoted empty fields (`,"",`), and common markers like `NA` and `NULL`.
+* **Custom Configuration:** The `SV_OPTION_NULL_VALUES` option allows users to specify a custom list of strings that should be treated as null.
+* **Enhanced Null Handling:** The `SV_OPTION_NULL_HANDLING` option changes the behavior to return `NULL` pointers for null fields, allowing the application to distinguish between an empty string and a missing value.
 
+### Security
 
-typedef struct {
-  /* number of cells in this row */
-  size_t size;
-  /* array of cells size @size */
-  sv_cell* cells;
-  /* header row;  */
-  unsigned int is_header:1;
-  /* comment: @width = 1 and @cells[0] is the comment cell */
-  unsigned int is_comment:1;
-  /* this row was skipped */
-  unsigned int is_skipped:1;
-  /* this row had no EOL; file ended */
-  unsigned int no_eol:1;
-} sv_row;
+The library provides a field size limit to prevent denial-of-service attacks from malicious CSV files with extremely large fields. The default limit is 128KB and can be configured using the `SV_OPTION_FIELD_SIZE_LIMIT` option. When the limit is exceeded, the parser returns an `SV_STATUS_FIELD_TOO_LARGE` error.
 
+## API
 
-typedef struct {
-  /* number of rows in this table */
-  size_t size;
-  /* array of rows size @size */
-  sv_row* rows;
-} sv_table;
-
-
-typedef struct {
-  const char* encoding; /* default "utf-8" */
-  const char eol; /* '\r', '\n' or '\0' for CRLF (default) */
-  const char quote; /* default '"' */
-  const char escape; /* default '"' */
-  unsigned int skip_rows; /* default 0 */
-  const char comment_prefix; /* default '# '*/
-  unsigned int header_row_count; /* default 1 */
-  const char delimiter; /* default ',' */
-  unsigned int skip_columns; /* default 0 */
-  unsigned int header_column_count; /* default 0 */
-  unsigned int skip_blank_rows:1; /* default 0 (false) */
-  unsigned int trim:2; /* 0 (false), 1 (start), 2 (end), 3 (both / true) */
-} sv_parse;
-```
-
-[1]: https://www.w3.org/TR/tabular-data-model/
-[2]: https://www.w3.org/2013/csvw/wiki/Main_Page
+See the `sv.h` header file for the full public API documentation.

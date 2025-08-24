@@ -6,12 +6,6 @@
   * [UTF-16](https://en.wikipedia.org/wiki/UTF-16) - Critical for international datasets
   * [The Absolute Minimum Everyone Working With Data Absolutely, Positively Must Know About File Types, Encoding, Delimiters and Data Types (No Excuses!)](https://theonemanitdepartment.wordpress.com/2014/12/15/the-absolute-minimum-everyone-working-with-data-absolutely-positively-must-know-about-file-types-encoding-delimiters-and-data-types-no-excuses/)
   * [The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)](http://www.joelonsoftware.com/articles/Unicode.html)
-* Field size limit (ruby `field_size_limit`) - Prevents buffer overflows and memory issues with large fields
-  * **Security & Stability**: Prevents denial-of-service attacks from malicious CSV files with extremely large fields
-  * **Current gap**: Library has no hard limit on individual field sizes - could consume unlimited memory
-  * **Risk**: A single field with gigabytes of data could cause memory exhaustion and crashes
-  * **Existing protections**: Code already has buffer growth logic and integer overflow checks, but no field size caps
-  * **Implementation**: Would set maximum field size (e.g., 1MB, 10MB) and either truncate, skip, or error on oversized fields
 
 ## Medium Priority (Data Quality & Usability) ##
 
@@ -129,7 +123,7 @@ from the W3C [CSV on the Web Working Group][2]
 [8]: http://www.w3.org/TR/tabular-metadata/
 [9]: http://www.w3.org/ns/csvw
 
-## Developer Notes (2025-08-23)
+## Developer Notes (2025-08-23) ##
 
 - Build/test status: Clean build, all tests pass locally via GNUMakefile and svtest.
 - Recommendations:
@@ -139,10 +133,17 @@ from the W3C [CSV on the Web Working Group][2]
   - Writer NULL semantics: consider serializing NULL as empty during output, or make it configurable.
   - Run static analysis regularly (clang --analyze).
 
-## Fuzzing status
+## Fuzzing status 2025-08-23 ##
 
 - Implemented: libFuzzer harnesses, Makefile targets, seed corpora, and dictionaries.
 - See README “Developer: Fuzzing” for usage.
 - Remaining items tracked in Todos:
   - Medium: short smoke fuzz in CI; regularly expand corpora (e.g., csv-spectrum) and merge seeds; enforce stricter quoted-cell checks under BAD_DATA_ERROR; run static analysis.
   - Future: consider OSS-Fuzz integration.
+
+## Field Size Limit 2025-08-24 ##
+
+* Field size limit (ruby `field_size_limit`) - Prevents buffer overflows and memory issues with large fields
+  * Implemented with a default limit of 128KB, configurable via `SV_OPTION_FIELD_SIZE_LIMIT`.
+  * Returns `SV_STATUS_FIELD_TOO_LARGE` when the limit is exceeded.
+

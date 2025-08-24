@@ -473,6 +473,9 @@ sv_parse_cell_add_char(sv* t, char c)
   sv_status_t status;
   size_t len = t->fields_buffer_len;
 
+  if(t->field_size_limit > 0 && len >= t->field_size_limit)
+    return SV_STATUS_FIELD_TOO_LARGE;
+
   status = sv_ensure_fields_buffer_size(t, len + 1);
   if(status)
     return status;
@@ -912,14 +915,14 @@ sv_internal_parse_chunk(sv *t, char *buffer, size_t len)
   int is_end = (!buffer || !len);
 
   if(is_end) {
-    if(sv_internal_parse_process_char(t, 0))
-      status = SV_STATUS_FAILED;
+    status = sv_internal_parse_process_char(t, 0);
+    if(status)
+      goto done;
   } else {
     while(len--) {
       char c = *buffer++;
       /* Ignore NULs in buffer */
-      if(c && sv_internal_parse_process_char(t, c)) {
-        status = SV_STATUS_FAILED;
+      if(c && (status = sv_internal_parse_process_char(t, c))) {
         goto done;
       }
     }

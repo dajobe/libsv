@@ -133,6 +133,8 @@ struct sv_s {
   char** null_values;
   unsigned int null_values_count;
   size_t* null_values_lengths;
+
+  size_t field_size_limit;
 };
 
 sv_status_t sv_internal_parse_chunk(sv *t, char *buffer, size_t len);

@@ -35,7 +35,8 @@ typedef enum {
   SV_STATUS_OK = 0,
   SV_STATUS_FAILED,
   SV_STATUS_NO_MEMORY,
-  SV_STATUS_LINE_FIELDS
+  SV_STATUS_LINE_FIELDS,
+  SV_STATUS_FIELD_TOO_LARGE
 } sv_status_t;
 
 typedef struct sv_s sv;
@@ -102,7 +103,8 @@ typedef enum {
   SV_OPTION_SKIP_ROWS,
   SV_OPTION_COMMENT_CALLBACK,
   SV_OPTION_NULL_HANDLING,
-  SV_OPTION_NULL_VALUES
+  SV_OPTION_NULL_VALUES,
+  SV_OPTION_FIELD_SIZE_LIMIT
 } sv_option_t;
 
 sv* sv_new(void *user_data, sv_fields_callback header_callback, sv_fields_callback data_callback, char field_sep);

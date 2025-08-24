@@ -317,6 +317,7 @@ static int svtest_run_skip_comment_interaction(void);
 static int svtest_run_skip_rows_gt_total(void);
 static int svtest_run_null_handling_default(void);
 static int svtest_run_null_handling_enhanced(void);
+static int svtest_run_field_size_limit(void);
 
 
 static int
@@ -1287,6 +1288,57 @@ static int svtest_run_header_null_handling_enhanced(void) {
   return rc;
 }
 
+static int svtest_run_field_size_limit(void) {
+  sv *t = NULL;
+  int rc = 0;
+  const char* test_data_str = "a,this_field_is_too_long,c";
+  size_t data_len = strlen(test_data_str);
+  sv_status_t status;
+
+  fprintf(stderr, "Running Test: Field Size Limit...\n");
+
+  t = sv_new(NULL, NULL, NULL, ',');
+  if (!t) {
+    fprintf(stderr, "%s: Test Field Size Limit FAIL - sv_new() failed\n", program);
+    return 1;
+  }
+
+  /* 1. Test that parsing fails with a small limit */
+  sv_set_option(t, SV_OPTION_FIELD_SIZE_LIMIT, (size_t)10);
+  status = sv_parse_chunk(t, (char*)test_data_str, data_len);
+  if (status != SV_STATUS_FIELD_TOO_LARGE) {
+    fprintf(stderr, "%s: Test Field Size Limit FAIL - expected SV_STATUS_FIELD_TOO_LARGE, got %d\n", program, status);
+    rc = 1;
+  }
+  sv_reset(t);
+
+  /* 2. Test that parsing succeeds with a larger limit */
+  sv_set_option(t, SV_OPTION_FIELD_SIZE_LIMIT, (size_t)100);
+  status = sv_parse_chunk(t, (char*)test_data_str, data_len);
+  if (status != SV_STATUS_OK) {
+    fprintf(stderr, "%s: Test Field Size Limit FAIL - expected SV_STATUS_OK with larger limit, got %d\n", program, status);
+    rc = 1;
+  }
+  sv_reset(t);
+
+  /* 3. Test that parsing succeeds with limit disabled (0) */
+  sv_set_option(t, SV_OPTION_FIELD_SIZE_LIMIT, (size_t)0);
+  status = sv_parse_chunk(t, (char*)test_data_str, data_len);
+  if (status != SV_STATUS_OK) {
+    fprintf(stderr, "%s: Test Field Size Limit FAIL - expected SV_STATUS_OK with disabled limit, got %d\n", program, status);
+    rc = 1;
+  }
+
+  sv_free(t);
+
+  if (rc == 0) {
+    fprintf(stderr, "%s: Test Field Size Limit OK\n", program);
+  }
+
+  return rc;
+}
+
+
 #define MAX_TEST_INDEX (N_TESTS-1)
 
 int
@@ -1375,6 +1427,9 @@ main(int argc, char *argv[])
       rc++;
     }
     if (svtest_run_header_null_handling_enhanced() != 0) {
+      rc++;
+    }
+    if (svtest_run_field_size_limit() != 0) {
       rc++;
     }
   }

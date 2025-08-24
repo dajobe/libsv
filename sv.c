@@ -77,6 +77,8 @@ sv_new(void *user_data, sv_fields_callback header_callback,
   t->null_values_count = 0;
   t->null_values_lengths = NULL;
 
+  t->field_size_limit = 128 * 1024; /* 128KB */
+
   sv_reset(t);
 
   return t;
