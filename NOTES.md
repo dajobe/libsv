@@ -17,6 +17,11 @@
 * Fuzzing (operational): Short smoke fuzz job in CI (optional) and regularly merge seeds (e.g., csv-spectrum)
 * Enforce strict quoted-cell validation when `SV_FLAGS_BAD_DATA_ERROR` is set (quote must be followed by separator/EOL)
 * Run static analysis regularly (clang `--analyze`)
+* Writer: avoid escaping separators inside quoted fields or ensure non-NUL escape char to prevent NUL bytes in output
+* Options: allow clearing `SV_OPTION_COMMENT_PREFIX` by passing NULL/empty to disable comments
+* Null handling: add option to disable default null markers and rely solely on configured null values
+* Writer: make per-row `fflush` optional for high-throughput output
+* Options: return failure when `SV_OPTION_QUOTE_CHAR` equals the field separator (currently silently ignored)
 
 ## Future (Nice-to-have) ##
 
@@ -147,3 +152,8 @@ from the W3C [CSV on the Web Working Group][2]
   * Implemented with a default limit of 128KB, configurable via `SV_OPTION_FIELD_SIZE_LIMIT`.
   * Returns `SV_STATUS_FIELD_TOO_LARGE` when the limit is exceeded.
 
+## Review 2025-08-24 (GPT-5.2-Codex) ##
+
+* Overall quality: solid C codebase with clear separation of parsing, options, and writing; documentation is thorough.
+* Strengths: consistent error handling via `sv_status_t`, careful memory management, and well-scoped feature flags.
+* Opportunities: clarify edge-case behaviors (writer escaping, optional flushing, configurable null defaults, and option validation) and keep TODOs aligned with implementation priorities.
